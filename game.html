@@ -15,18 +15,6 @@
             align-items: center;
             justify-content: center;
             height: 100vh;
-            overflow: hidden;
-        }
-        #header {
-            position: absolute;
-            top: 10px;
-            width: 100%;
-            display: flex;
-            justify-content: space-between;
-            padding: 0 20px;
-        }
-        #header span {
-            font-size: 18px;
         }
         #question-container {
             text-align: center;
@@ -50,29 +38,16 @@
         #options button:hover {
             background-color: #0056b3;
         }
-        .feedback {
+        #header {
             position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            font-size: 30px;
-            padding: 10px 20px;
-            border-radius: 5px;
-            animation: fadeout 1s forwards;
+            top: 10px;
+            width: 100%;
+            display: flex;
+            justify-content: space-between;
+            padding: 0 20px;
         }
-        .correct {
-            background-color: green;
-        }
-        .incorrect {
-            background-color: red;
-        }
-        @keyframes fadeout {
-            0% {
-                opacity: 1;
-            }
-            100% {
-                opacity: 0;
-            }
+        #header span {
+            font-size: 18px;
         }
     </style>
 </head>
@@ -93,9 +68,7 @@
             { question: "Which is the largest planet?", options: ["Earth", "Mars", "Jupiter", "Saturn"], answer: "Jupiter" }
         ];
 
-        let playerName = localStorage.getItem("playerName") || prompt("Enter your name:");
-        localStorage.setItem("playerName", playerName);
-
+        let playerName = prompt("Enter your name:");
         let currentQuestionIndex = 0;
         let score = 0;
         let timeLeft = 60;
@@ -121,21 +94,10 @@
         function checkAnswer(selected, correct) {
             if (selected === correct) {
                 score++;
-                animateFeedback("correct");
-            } else {
-                animateFeedback("incorrect");
             }
             document.getElementById("score").textContent = `Score: ${score}`;
             currentQuestionIndex++;
             displayQuestion();
-        }
-
-        function animateFeedback(status) {
-            const feedback = document.createElement("div");
-            feedback.textContent = status === "correct" ? "Correct!" : "Wrong!";
-            feedback.className = `feedback ${status}`;
-            document.body.appendChild(feedback);
-            setTimeout(() => feedback.remove(), 1000);
         }
 
         function startTimer() {
@@ -150,7 +112,6 @@
             }, 1000);
         }
 
-        
         function endGame() {
             alert(`Game Over! Your score is ${score}`);
             window.location.href = `congratulations.html?name=${playerName}&score=${score}`;
