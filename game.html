@@ -87,6 +87,7 @@
     </div>
 
     <script>
+        // Define your question sets here
         const questionSets = [
             [
                 { question: "What is the capital of France?", options: ["Berlin", "Madrid", "Paris", "Rome"], answer: "Paris" },
@@ -103,9 +104,23 @@
         let currentQuestionIndex = 0;
         let score = 0;
         let timeLeft = 60;
-        let playerName = prompt("Enter your name:");
+        let playerName;
 
-        localStorage.setItem("playerName", playerName);
+        // Prompt user for their name when the page loads
+        window.onload = function() {
+            playerName = prompt("Enter your name:");
+            if (!playerName) {
+                playerName = "Guest"; // Default name if user cancels or doesn't enter anything
+            }
+            localStorage.setItem("playerName", playerName);
+            startGame();
+        }
+
+        function startGame() {
+            currentSessionQuestions = generateQuestionSet();
+            displayQuestion();
+            startTimer();
+        }
 
         function generateQuestionSet() {
             const availableSets = questionSets.filter((_, index) => !usedQuestions.includes(index));
@@ -117,8 +132,6 @@
             localStorage.setItem("usedQuestions", JSON.stringify(usedQuestions));
             return availableSets[randomIndex];
         }
-
-        currentSessionQuestions = generateQuestionSet();
 
         function displayQuestion() {
             if (currentQuestionIndex >= currentSessionQuestions.length) {
@@ -182,11 +195,6 @@
             leaderboard.sort((a, b) => b.score - a.score);
             localStorage.setItem("leaderboard", JSON.stringify(leaderboard));
         }
-
-        document.addEventListener("DOMContentLoaded", () => {
-            displayQuestion();
-            startTimer();
-        });
     </script>
 </body>
 </html>
