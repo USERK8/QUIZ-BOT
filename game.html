@@ -6,19 +6,96 @@
     <title>Endless Runner Game</title>
     <style>
         body {
-            margin: 0;
-            overflow: hidden;
-            background-color: #87CEEB;
+            background-color: black;
+            color: white;
+            font-family: Arial, sans-serif;
+            text-align: center;
+            padding: 20px;
         }
-        canvas {
-            display: block;
-            margin: 0 auto;
-            background-color: #000;
+        #game {
+            margin-top: 50px;
+        }
+        #game-over {
+            display: none;
+            font-size: 24px;
+            color: red;
+        }
+        button {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+            border-radius: 5px;
+            margin-top: 20px;
+        }
+        button:hover {
+            background-color: #0056b3;
         }
     </style>
 </head>
 <body>
-    <canvas id="gameCanvas"></canvas>
-    <script src="game.js"></script>
+
+    <h1>Endless Runner Game</h1>
+    <p id="player-name"></p>
+    <p id="score">Score: 0</p>
+
+    <div id="game">
+        <p>Press "Space" to jump over obstacles!</p>
+        <div id="game-over">Game Over! Your final score: <span id="final-score"></span></div>
+    </div>
+
+    <button id="start-button">Start Game</button>
+
+    <script>
+        let playerName = sessionStorage.getItem('playerName');
+        let score = 0;
+        let gameInterval;
+        let isJumping = false;
+        let isGameOver = false;
+
+        document.getElementById('player-name').textContent = "Player: " + playerName;
+
+        document.getElementById('start-button').addEventListener('click', startGame);
+
+        function startGame() {
+            score = 0;
+            isGameOver = false;
+            isJumping = false;
+            document.getElementById('game-over').style.display = 'none';
+            document.getElementById('score').textContent = "Score: " + score;
+
+            gameInterval = setInterval(function() {
+                if (isGameOver) return;
+
+                score++;
+                document.getElementById('score').textContent = "Score: " + score;
+
+                if (Math.random() < 0.05 && !isJumping) {
+                    gameOver();
+                }
+            }, 100);
+
+            document.addEventListener('keydown', jump);
+        }
+
+        function jump(event) {
+            if (event.code === 'Space' && !isJumping && !isGameOver) {
+                isJumping = true;
+                setTimeout(function() {
+                    isJumping = false;
+                }, 500);
+            }
+        }
+
+        function gameOver() {
+            clearInterval(gameInterval);
+            isGameOver = true;
+            document.getElementById('game-over').style.display = 'block';
+            document.getElementById('final-score').textContent = score;
+        }
+    </script>
+
 </body>
 </html>
