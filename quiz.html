@@ -65,6 +65,9 @@
         const urlParams = new URLSearchParams(window.location.search);
         const name = urlParams.get('name');
 
+        // Debugging: Check if the name is being extracted correctly
+        console.log('Player Name:', name);
+
         // Display the player's name
         if (name) {
             document.getElementById('playerName').textContent = `Hello, ${name}! Get ready to start.`;
