@@ -32,7 +32,7 @@
     </div>
 
     <script>
-        // Get player name and score from URL parameters or localStorage
+        // Get player name and score from URL parameters
         const urlParams = new URLSearchParams(window.location.search);
         const playerName = urlParams.get('name') || localStorage.getItem("playerName");
         const score = urlParams.get('score') || localStorage.getItem("score");
