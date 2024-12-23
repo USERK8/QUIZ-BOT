@@ -3,41 +3,38 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Game Over</title>
+    <title>Congratulations</title>
     <style>
         body {
-            margin: 0;
-            font-family: Arial, sans-serif;
             background-color: black;
             color: white;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            height: 100vh;
+            font-family: Arial, sans-serif;
+            text-align: center;
+            padding: 50px;
         }
-        h1 {
-            font-size: 36px;
+        .congrats-message {
+            font-size: 24px;
+            margin: 20px 0;
         }
         .score {
-            font-size: 24px;
-            margin-top: 20px;
+            font-size: 32px;
+            font-weight: bold;
         }
     </style>
 </head>
 <body>
-    <h1>Congratulations, <span id="player-name"></span>!</h1>
-    <div class="score">
-        Your score: <span id="player-score"></span>
+    <div class="congrats-message">
+        Congratulations, <span id="player-name"></span>!
     </div>
-    
-    <script>
-        // Get player name and score from URL parameters
-        const urlParams = new URLSearchParams(window.location.search);
-        const playerName = urlParams.get('name') || localStorage.getItem("playerName");
-        const score = urlParams.get('score') || localStorage.getItem("score");
+    <div class="score">
+        Your score is: <span id="player-score"></span>
+    </div>
 
-        // Display the player's name and score
+    <script>
+        const urlParams = new URLSearchParams(window.location.search);
+        const playerName = urlParams.get('name');
+        const score = urlParams.get('score');
+
         document.getElementById("player-name").textContent = playerName;
         document.getElementById("player-score").textContent = score;
     </script>
