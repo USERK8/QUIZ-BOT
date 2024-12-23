@@ -7,140 +7,175 @@
     <style>
         body {
             margin: 0;
-            height: 100vh;
-            background-color: black;
             font-family: Arial, sans-serif;
+            background-color: black;
             color: white;
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
+            height: 100vh;
+            overflow: hidden;
         }
-        .header {
+        #header {
             position: absolute;
-            top: 0;
+            top: 10px;
             width: 100%;
             display: flex;
             justify-content: space-between;
-            padding: 10px 20px;
-            box-sizing: border-box;
-            color: white;
+            padding: 0 20px;
         }
-        .header span {
+        #header span {
             font-size: 18px;
         }
-        .question-container {
+        #question-container {
             text-align: center;
+            margin-top: 50px;
         }
-        .question {
+        #question {
             font-size: 24px;
             margin-bottom: 20px;
         }
-        .options {
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-        }
-        .option {
-            background-color: #1e1e1e;
-            padding: 10px;
+        #options button {
+            background-color: #007bff;
+            color: white;
             border: none;
             border-radius: 5px;
-            color: white;
-            font-size: 18px;
+            padding: 10px 20px;
+            margin: 10px;
+            font-size: 16px;
             cursor: pointer;
             transition: background-color 0.3s;
         }
-        .option:hover {
-            background-color: #007bff;
+        #options button:hover {
+            background-color: #0056b3;
         }
-        .option.correct {
-            animation: correct 0.5s forwards;
+        .feedback {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 30px;
+            padding: 10px 20px;
+            border-radius: 5px;
+            animation: fadeout 1s forwards;
         }
-        .option.incorrect {
-            animation: incorrect 0.5s forwards;
+        .correct {
+            background-color: green;
         }
-        @keyframes correct {
-            from { background-color: #1e1e1e; }
-            to { background-color: green; }
+        .incorrect {
+            background-color: red;
         }
-        @keyframes incorrect {
-            from { background-color: #1e1e1e; }
-            to { background-color: red; }
+        @keyframes fadeout {
+            0% {
+                opacity: 1;
+            }
+            100% {
+                opacity: 0;
+            }
         }
     </style>
 </head>
 <body>
-    <div class="header">
+    <div id="header">
         <span id="score">Score: 0</span>
         <span id="timer">Time: 60s</span>
     </div>
-    <div class="question-container">
-        <div class="question" id="question">Loading...</div>
-        <div class="options" id="options"></div>
+    <div id="question-container">
+        <div id="question">Loading question...</div>
+        <div id="options"></div>
     </div>
 
     <script>
-        const questions = [
-            { question: "What is the capital of France?", options: ["Paris", "London", "Berlin", "Madrid"], correct: 0 },
-            { question: "Which planet is known as the Red Planet?", options: ["Earth", "Mars", "Jupiter", "Venus"], correct: 1 },
-            { question: "What is 5 + 7?", options: ["10", "12", "15", "11"], correct: 1 },
-            { question: "Who wrote 'Hamlet'?", options: ["Charles Dickens", "J.K. Rowling", "William Shakespeare", "Leo Tolstoy"], correct: 2 },
-            // Add more questions here
+        const questionSets = [
+            [
+                { question: "What is 2 + 2?", options: ["3", "4", "5", "6"], answer: "4" },
+                { question: "What is the capital of France?", options: ["Berlin", "Madrid", "Paris", "Rome"], answer: "Paris" },
+            ],
+            [
+                { question: "What is the square root of 16?", options: ["2", "3", "4", "5"], answer: "4" },
+                { question: "Which planet is known as the Red Planet?", options: ["Earth", "Mars", "Jupiter", "Venus"], answer: "Mars" },
+            ],
         ];
 
-        let score = 0;
-        let timeRemaining = 60;
+        let usedQuestions = JSON.parse(localStorage.getItem("usedQuestions")) || [];
+        let currentSessionQuestions = [];
         let currentQuestionIndex = 0;
+        let score = 0;
+        let timeLeft = 60;
 
-        const scoreDisplay = document.getElementById('score');
-        const timerDisplay = document.getElementById('timer');
-        const questionDisplay = document.getElementById('question');
-        const optionsContainer = document.getElementById('options');
+        function generateQuestionSet() {
+            const availableSets = questionSets.filter((_, index) => !usedQuestions.includes(index));
+            if (availableSets.length === 0) {
+                usedQuestions = [];
+            }
+            const randomIndex = Math.floor(Math.random() * questionSets.length);
+            usedQuestions.push(randomIndex);
+            localStorage.setItem("usedQuestions", JSON.stringify(usedQuestions));
+            return questionSets[randomIndex];
+        }
 
-        function loadQuestion() {
-            const questionData = questions[currentQuestionIndex % questions.length];
-            questionDisplay.textContent = questionData.question;
-            optionsContainer.innerHTML = '';
-            questionData.options.forEach((option, index) => {
-                const button = document.createElement('button');
+        currentSessionQuestions = generateQuestionSet();
+
+        function displayQuestion() {
+            if (currentQuestionIndex >= currentSessionQuestions.length) {
+                endGame();
+                return;
+            }
+            const question = currentSessionQuestions[currentQuestionIndex];
+            document.getElementById("question").textContent = question.question;
+            const optionsContainer = document.getElementById("options");
+            optionsContainer.innerHTML = "";
+
+            question.options.forEach((option) => {
+                const button = document.createElement("button");
                 button.textContent = option;
-                button.className = 'option';
-                button.onclick = () => checkAnswer(index, questionData.correct);
+                button.onclick = () => checkAnswer(option, question.answer);
                 optionsContainer.appendChild(button);
             });
         }
 
         function checkAnswer(selected, correct) {
-            const buttons = document.querySelectorAll('.option');
             if (selected === correct) {
                 score++;
-                scoreDisplay.textContent = `Score: ${score}`;
-                buttons[selected].classList.add('correct');
+                animateFeedback("correct");
             } else {
-                buttons[selected].classList.add('incorrect');
+                animateFeedback("incorrect");
             }
-            setTimeout(() => {
-                currentQuestionIndex++;
-                loadQuestion();
-            }, 500);
+            document.getElementById("score").textContent = `Score: ${score}`;
+            currentQuestionIndex++;
+            displayQuestion();
+        }
+
+        function animateFeedback(status) {
+            const feedback = document.createElement("div");
+            feedback.textContent = status === "correct" ? "Correct!" : "Wrong!";
+            feedback.className = `feedback ${status}`;
+            document.body.appendChild(feedback);
+            setTimeout(() => feedback.remove(), 1000);
         }
 
         function startTimer() {
-            const timerInterval = setInterval(() => {
-                timeRemaining--;
-                timerDisplay.textContent = `Time: ${timeRemaining}s`;
-                if (timeRemaining <= 0) {
-                    clearInterval(timerInterval);
-                    alert(`Time's up! Your final score is ${score}`);
-                    location.reload(); // Restart the game
+            const timer = setInterval(() => {
+                if (timeLeft <= 0) {
+                    clearInterval(timer);
+                    endGame();
+                } else {
+                    timeLeft--;
+                    document.getElementById("timer").textContent = `Time: ${timeLeft}s`;
                 }
             }, 1000);
         }
 
-        // Start the game
-        loadQuestion();
-        startTimer();
+        function endGame() {
+            alert(`Game Over! Your score is ${score}`);
+            localStorage.removeItem("usedQuestions");
+        }
+
+        document.addEventListener("DOMContentLoaded", () => {
+            displayQuestion();
+            startTimer();
+        });
     </script>
 </body>
 </html>
