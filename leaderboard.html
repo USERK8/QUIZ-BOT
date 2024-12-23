@@ -1,4 +1,3 @@
-<!-- leaderboard.html -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -11,40 +10,32 @@
             background-color: black;
             color: white;
             text-align: center;
-            padding: 20px;
+            padding-top: 50px;
         }
-        #leaderboard {
-            list-style-type: none;
-            padding: 0;
+        .leaderboard {
+            font-size: 24px;
+            margin-top: 20px;
         }
-        #leaderboard li {
-            background-color: #333;
-            margin: 10px;
-            padding: 10px;
-            border-radius: 5px;
-            font-size: 18px;
+        .score {
+            font-size: 32px;
+            color: yellow;
         }
     </style>
 </head>
 <body>
-    <h1>Leaderboard</h1>
-    <ul id="leaderboard"></ul>
+    <div class="leaderboard">
+        <h1>Congratulations, <span id="playerName"></span>!</h1>
+        <p>Your Score: <span id="playerScore" class="score"></span></p>
+    </div>
 
     <script>
-        document.addEventListener("DOMContentLoaded", () => {
-            const leaderboard = JSON.parse(localStorage.getItem("leaderboard")) || [];
-            const leaderboardContainer = document.getElementById("leaderboard");
+        // Get player name and score from localStorage
+        const playerName = localStorage.getItem("playerName");
+        const playerScore = localStorage.getItem("playerScore");
 
-            if (leaderboard.length === 0) {
-                leaderboardContainer.innerHTML = "<li>No scores available.</li>";
-            } else {
-                leaderboard.forEach((entry) => {
-                    const li = document.createElement("li");
-                    li.textContent = `${entry.name} - ${entry.score} points`;
-                    leaderboardContainer.appendChild(li);
-                });
-            }
-        });
+        // Display player name and score
+        document.getElementById("playerName").textContent = playerName;
+        document.getElementById("playerScore").textContent = playerScore;
     </script>
 </body>
 </html>
