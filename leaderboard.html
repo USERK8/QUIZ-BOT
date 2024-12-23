@@ -1,0 +1,50 @@
+<!-- leaderboard.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Leaderboard</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: black;
+            color: white;
+            text-align: center;
+            padding: 20px;
+        }
+        #leaderboard {
+            list-style-type: none;
+            padding: 0;
+        }
+        #leaderboard li {
+            background-color: #333;
+            margin: 10px;
+            padding: 10px;
+            border-radius: 5px;
+            font-size: 18px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Leaderboard</h1>
+    <ul id="leaderboard"></ul>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            const leaderboard = JSON.parse(localStorage.getItem("leaderboard")) || [];
+            const leaderboardContainer = document.getElementById("leaderboard");
+
+            if (leaderboard.length === 0) {
+                leaderboardContainer.innerHTML = "<li>No scores available.</li>";
+            } else {
+                leaderboard.forEach((entry) => {
+                    const li = document.createElement("li");
+                    li.textContent = `${entry.name} - ${entry.score} points`;
+                    leaderboardContainer.appendChild(li);
+                });
+            }
+        });
+    </script>
+</body>
+</html>
