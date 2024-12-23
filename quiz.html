@@ -3,136 +3,72 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Quiz Game</title>
+    <title>Quiz Rules</title>
     <style>
         body {
-            font-family: Arial, sans-serif;
+            margin: 0;
+            height: 100vh;
             background-color: black;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-family: Arial, sans-serif;
             color: white;
-            text-align: center;
-            padding: 20px;
         }
-        .question {
+        .container {
+            text-align: center;
+            background-color: #1e1e1e;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(255, 255, 255, 0.2);
+        }
+        .container h1 {
+            margin-bottom: 20px;
             font-size: 24px;
         }
-        .options {
-            margin-top: 20px;
+        .container p {
+            font-size: 18px;
+            margin-bottom: 20px;
         }
-        .options button {
-            background-color: #007bff;
-            color: white;
-            border: none;
+        .container button {
             padding: 10px 20px;
             font-size: 16px;
-            cursor: pointer;
+            color: white;
+            background-color: #007bff;
+            border: none;
             border-radius: 5px;
-            margin: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s;
         }
-        .options button:hover {
+        .container button:hover {
             background-color: #0056b3;
-        }
-        .timer {
-            font-size: 20px;
-            margin-top: 20px;
-        }
-        .double-points {
-            color: yellow;
-            font-size: 20px;
-        }
-        .result {
-            font-size: 24px;
-            margin-top: 30px;
         }
     </style>
 </head>
 <body>
-
-    <h1>Quiz Game</h1>
-    <div id="question-container">
-        <p class="question" id="question-text">What is the capital of France?</p>
-        <div class="options">
-            <button onclick="checkAnswer('A')">A. Paris</button>
-            <button onclick="checkAnswer('B')">B. London</button>
-            <button onclick="checkAnswer('C')">C. Berlin</button>
-            <button onclick="checkAnswer('D')">D. Madrid</button>
-        </div>
-        <p id="timer" class="timer">Time left: 10s</p>
-        <p id="double-points" class="double-points">Double Points in 5 seconds!</p>
+    <div class="container">
+        <h1>Welcome, <span id="player-name"></span>!</h1>
+        <p>Rules:</p>
+        <ul>
+            <li>You have 1 minute to answer as many questions as possible.</li>
+            <li>Each correct answer awards you points.</li>
+            <li>Click on the correct option to proceed to the next question.</li>
+        </ul>
+        <button onclick="startGame()">Let's Begin</button>
     </div>
 
-    <div id="result" class="result"></div>
-
     <script>
-        let correctAnswer = 'A';
-        let score = 0;
-        let timer = 10;
-        let doublePointsTime = 5;
-        let interval;
-        let isDoublePointsActive = false;
+        // Get player's name from the URL
+        const params = new URLSearchParams(window.location.search);
+        const playerName = params.get('name') || "Player";
 
-        // Get the player's name from localStorage
-        const playerName = localStorage.getItem('playerName');
-        if (playerName) {
-            document.getElementById('question-text').innerHTML = `Hello, ${playerName}! ${document.getElementById('question-text').innerHTML}`;
-        } else {
-            alert('No player name found! Please start the quiz from the beginning.');
-            window.location.href = "index.html";  // Redirect to index.html if no name is found
+        // Display the player's name
+        document.getElementById('player-name').textContent = playerName;
+
+        function startGame() {
+            // Redirect to game.html
+            window.location.href = `game.html?name=${encodeURIComponent(playerName)}`;
         }
-
-        // Start the timer
-        function startTimer() {
-            interval = setInterval(function() {
-                document.getElementById('timer').textContent = `Time left: ${timer}s`;
-
-                if (timer <= 0) {
-                    clearInterval(interval);
-                    endGame('Time is up!');
-                } else if (timer <= doublePointsTime && !isDoublePointsActive) {
-                    isDoublePointsActive = true;
-                    document.getElementById('double-points').style.display = 'block';
-                }
-                timer--;
-            }, 1000);
-        }
-
-        // Check the answer
-        function checkAnswer(answer) {
-            clearInterval(interval);  // Stop the timer when an answer is selected
-            if (answer === correctAnswer) {
-                if (isDoublePointsActive) {
-                    score += 2;  // Double points if within the 5-second window
-                    document.getElementById('result').textContent = "Correct! You earned 2 points!";
-                } else {
-                    score += 1;  // Regular points
-                    document.getElementById('result').textContent = "Correct! You earned 1 point!";
-                }
-            } else {
-                document.getElementById('result').textContent = "Wrong answer! No points.";
-            }
-            document.getElementById('question-container').style.display = 'none';  // Hide the question
-            setTimeout(resetGame, 2000);  // Wait for 2 seconds before resetting the game
-        }
-
-        // End the game
-        function endGame(message) {
-            document.getElementById('result').textContent = `${message} Your final score is: ${score}`;
-            document.getElementById('question-container').style.display = 'none';
-        }
-
-        // Reset the game
-        function resetGame() {
-            score = 0;
-            timer = 10;
-            isDoublePointsActive = false;
-            document.getElementById('double-points').style.display = 'none';
-            document.getElementById('result').textContent = '';
-            document.getElementById('question-container').style.display = 'block';
-            startTimer();
-        }
-
-        // Start the quiz when the page loads
-        startTimer();
     </script>
-
 </body>
 </html>
