@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Game Intro</title>
+    <style>
+        body {
+            margin: 0;
+            height: 100vh;
+            background-color: black;
+            color: white;
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            text-align: center;
+        }
+        .container {
+            background-color: #333;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(255, 255, 255, 0.2);
+            width: 80%;
+            max-width: 600px;
+        }
+        h1 {
+            margin-bottom: 20px;
+        }
+        p {
+            font-size: 18px;
+            margin-bottom: 20px;
+        }
+        .player-name {
+            font-size: 20px;
+            font-weight: bold;
+            margin-bottom: 20px;
+        }
+        .start-button {
+            padding: 10px 20px;
+            font-size: 18px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        .start-button:hover {
+            background-color: #0056b3;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Welcome to the Quiz Game!</h1>
+        <p>Before we begin, here are the rules:</p>
+        <p>1. You will be presented with a series of questions.</p>
+        <p>2. Answer each question to the best of your ability.</p>
+        <p>3. Each correct answer will earn you points!</p>
+        <p>4. At the end of the game, your score will be displayed.</p>
+        <div class="player-name" id="playerName"></div>
+        <button class="start-button" onclick="startGame()">Start Game</button>
+    </div>
+
+    <script>
+        // Get the player's name from the URL query parameter
+        const urlParams = new URLSearchParams(window.location.search);
+        const playerName = urlParams.get('name') || 'Player';
+
+        // Display the player's name on the page
+        document.getElementById('playerName').innerText = `Player: ${playerName}`;
+
+        // Start the game when the button is clicked
+        function startGame() {
+            alert('Let the game begin!');
+            // You can redirect to the actual quiz page here (e.g., quiz.html)
+            window.location.href = "quiz.html"; // Replace with your actual quiz page
+        }
+    </script>
+</body>
+</html>
