@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Quiz Game</title>
+    <title>Quiz Game</title>         
     <style>
         body {
             margin: 0;
@@ -15,6 +15,18 @@
             align-items: center;
             justify-content: center;
             height: 100vh;
+            overflow: hidden;
+        }
+        #header {
+            position: absolute;
+            top: 10px;
+            width: 100%;
+            display: flex;
+            justify-content: space-between;
+            padding: 0 20px;
+        }
+        #header span {
+            font-size: 18px;
         }
         #question-container {
             text-align: center;
@@ -38,16 +50,29 @@
         #options button:hover {
             background-color: #0056b3;
         }
-        #header {
+        .feedback {
             position: absolute;
-            top: 10px;
-            width: 100%;
-            display: flex;
-            justify-content: space-between;
-            padding: 0 20px;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 30px;
+            padding: 10px 20px;
+            border-radius: 5px;
+            animation: fadeout 1s forwards;
         }
-        #header span {
-            font-size: 18px;
+        .correct {
+            background-color: green;
+        }
+        .incorrect {
+            background-color: red;
+        }
+        @keyframes fadeout {
+            0% {
+                opacity: 1;
+            }
+            100% {
+                opacity: 0;
+            }
         }
     </style>
 </head>
@@ -62,31 +87,39 @@
     </div>
 
     <script>
-        // Define the questions
         const questionSets = [
             { question: "What is the capital of France?", options: ["Berlin", "Madrid", "Paris", "Rome"], answer: "Paris" },
-            { question: "What is 2 + 2?", options: ["3", "4", "5", "6"], answer: "4" },
-            { question: "Which is the largest planet?", options: ["Earth", "Mars", "Jupiter", "Saturn"], answer: "Jupiter" }
+            { question: "Which is the largest planet?", options: ["Earth", "Mars", "Jupiter", "Venus"], answer: "Jupiter" },
+            { question: "Who wrote 'Romeo and Juliet'?", options: ["Shakespeare", "Dickens", "Hemingway", "Austen"], answer: "Shakespeare" },
+            // Add more questions here
         ];
 
-        let playerName = prompt("Enter your name:");
+        let usedQuestions = JSON.parse(localStorage.getItem("usedQuestions")) || [];
+        let currentSessionQuestions = [];
         let currentQuestionIndex = 0;
         let score = 0;
         let timeLeft = 60;
+        let playerName = "";
 
-        // Function to start the game
-        function startGame() {
-            displayQuestion();
-            startTimer();
+        function generateQuestionSet() {
+            const availableSets = questionSets.filter((_, index) => !usedQuestions.includes(index));
+            if (availableSets.length === 0) {
+                usedQuestions = [];
+            }
+            const randomIndex = Math.floor(Math.random() * questionSets.length);
+            usedQuestions.push(randomIndex);
+            localStorage.setItem("usedQuestions", JSON.stringify(usedQuestions));
+            return questionSets[randomIndex];
         }
 
-        // Display the current question
+        currentSessionQuestions = generateQuestionSet();
+
         function displayQuestion() {
-            if (currentQuestionIndex >= questionSets.length) {
+            if (currentQuestionIndex >= currentSessionQuestions.length) {
                 endGame();
                 return;
             }
-            const question = questionSets[currentQuestionIndex];
+            const question = currentSessionQuestions[currentQuestionIndex];
             document.getElementById("question").textContent = question.question;
             const optionsContainer = document.getElementById("options");
             optionsContainer.innerHTML = "";
@@ -99,17 +132,26 @@
             });
         }
 
-        // Check if the answer is correct
         function checkAnswer(selected, correct) {
             if (selected === correct) {
                 score++;
+                animateFeedback("correct");
+            } else {
+                animateFeedback("incorrect");
             }
             document.getElementById("score").textContent = `Score: ${score}`;
             currentQuestionIndex++;
             displayQuestion();
         }
 
-        // Start the countdown timer
+        function animateFeedback(status) {
+            const feedback = document.createElement("div");
+            feedback.textContent = status === "correct" ? "Correct!" : "Wrong!";
+            feedback.className = `feedback ${status}`;
+            document.body.appendChild(feedback);
+            setTimeout(() => feedback.remove(), 1000);
+        }
+
         function startTimer() {
             const timer = setInterval(() => {
                 if (timeLeft <= 0) {
@@ -122,15 +164,17 @@
             }, 1000);
         }
 
-        // End the game and show the result
         function endGame() {
             alert(`Game Over! Your score is ${score}`);
-            window.location.href = `congratulations.html?name=${playerName}&score=${score}`;
+            localStorage.removeItem("usedQuestions");
+            // Redirect to a new page to show the score
+            window.location.href = `score.html?name=${encodeURIComponent(playerName)}&score=${score}`;
         }
 
-        // Wait for the DOM to load before starting the game
         document.addEventListener("DOMContentLoaded", () => {
-            startGame();
+            playerName = prompt("Enter your name:");
+            displayQuestion();
+            startTimer();
         });
     </script>
 </body>
