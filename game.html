@@ -87,59 +87,35 @@
     </div>
 
     <script>
-        // Define your question sets here
         const questionSets = [
-            [
-                { question: "What is the capital of France?", options: ["Berlin", "Madrid", "Paris", "Rome"], answer: "Paris" },
-                { question: "What is 2 + 2?", options: ["3", "4", "5", "6"], answer: "4" }
-            ],
-            [
-                { question: "What is the largest planet?", options: ["Earth", "Jupiter", "Mars", "Saturn"], answer: "Jupiter" },
-                { question: "What is the square root of 16?", options: ["2", "3", "4", "5"], answer: "4" }
-            ]
+            // Add your questions here, each set should be an array of question objects
+            { question: "What is the capital of France?", options: ["Berlin", "Madrid", "Paris", "Rome"], answer: "Paris" },
+            { question: "What is 2 + 2?", options: ["3", "4", "5", "6"], answer: "4" },
+            { question: "Which is the largest planet?", options: ["Earth", "Mars", "Jupiter", "Saturn"], answer: "Jupiter" }
+            // Add more sets as needed
         ];
+
+        let playerName = localStorage.getItem("playerName") || prompt("Enter your name:");
+        localStorage.setItem("playerName", playerName);
 
         let usedQuestions = JSON.parse(localStorage.getItem("usedQuestions")) || [];
         let currentSessionQuestions = [];
         let currentQuestionIndex = 0;
         let score = 0;
         let timeLeft = 60;
-        let playerName;
-
-        // Check if the player name is already stored
-        if (!localStorage.getItem("playerName")) {
-            // Prompt the user for their name if not stored
-            playerName = prompt("Enter your name:");
-            if (!playerName) {
-                playerName = "Guest"; // Default name if user cancels or doesn't enter anything
-            }
-            localStorage.setItem("playerName", playerName);
-        } else {
-            // If name is already stored, use it
-            playerName = localStorage.getItem("playerName");
-        }
-
-        // Start the game
-        window.onload = function() {
-            startGame();
-        }
-
-        function startGame() {
-            currentSessionQuestions = generateQuestionSet();
-            displayQuestion();
-            startTimer();
-        }
 
         function generateQuestionSet() {
             const availableSets = questionSets.filter((_, index) => !usedQuestions.includes(index));
             if (availableSets.length === 0) {
                 usedQuestions = [];
             }
-            const randomIndex = Math.floor(Math.random() * availableSets.length);
+            const randomIndex = Math.floor(Math.random() * questionSets.length);
             usedQuestions.push(randomIndex);
             localStorage.setItem("usedQuestions", JSON.stringify(usedQuestions));
-            return availableSets[randomIndex];
+            return questionSets[randomIndex];
         }
+
+        currentSessionQuestions = generateQuestionSet();
 
         function displayQuestion() {
             if (currentQuestionIndex >= currentSessionQuestions.length) {
@@ -194,15 +170,19 @@
         function endGame() {
             alert(`Game Over! Your score is ${score}`);
             saveScore(playerName, score);
+            window.location.href = `congratulations.html?name=${playerName}&score=${score}`;
             localStorage.removeItem("usedQuestions");
         }
 
         function saveScore(name, score) {
-            let leaderboard = JSON.parse(localStorage.getItem("leaderboard")) || [];
-            leaderboard.push({ name, score });
-            leaderboard.sort((a, b) => b.score - a.score);
-            localStorage.setItem("leaderboard", JSON.stringify(leaderboard));
+            localStorage.setItem("score", score);
+            localStorage.setItem("playerName", name);
         }
+
+        document.addEventListener("DOMContentLoaded", () => {
+            displayQuestion();
+            startTimer();
+        });
     </script>
 </body>
 </html>
