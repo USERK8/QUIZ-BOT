@@ -1,79 +1,12 @@
+<!-- game.html -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Quiz Game</title>         
+    <title>Quiz Game</title>
     <style>
-        body {
-            margin: 0;
-            font-family: Arial, sans-serif;
-            background-color: black;
-            color: white;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            height: 100vh;
-            overflow: hidden;
-        }
-        #header {
-            position: absolute;
-            top: 10px;
-            width: 100%;
-            display: flex;
-            justify-content: space-between;
-            padding: 0 20px;
-        }
-        #header span {
-            font-size: 18px;
-        }
-        #question-container {
-            text-align: center;
-            margin-top: 50px;
-        }
-        #question {
-            font-size: 24px;
-            margin-bottom: 20px;
-        }
-        #options button {
-            background-color: #007bff;
-            color: white;
-            border: none;
-            border-radius: 5px;
-            padding: 10px 20px;
-            margin: 10px;
-            font-size: 16px;
-            cursor: pointer;
-            transition: background-color 0.3s;
-        }
-        #options button:hover {
-            background-color: #0056b3;
-        }
-        .feedback {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            font-size: 30px;
-            padding: 10px 20px;
-            border-radius: 5px;
-            animation: fadeout 1s forwards;
-        }
-        .correct {
-            background-color: green;
-        }
-        .incorrect {
-            background-color: red;
-        }
-        @keyframes fadeout {
-            0% {
-                opacity: 1;
-            }
-            100% {
-                opacity: 0;
-            }
-        }
+        /* Add your existing styles here */
     </style>
 </head>
 <body>
@@ -82,62 +15,38 @@
         <span id="timer">Time: 60s</span>
     </div>
     <div id="question-container">
-        <div id="question"></div>
+        <div id="question">Loading question...</div>
         <div id="options"></div>
     </div>
-    <script>
-        const questionSets = [
-            // Set 1: Example of a filled set
-            [
-                { question: "What is the capital of France?", options: ["Berlin", "Madrid", "Paris", "Rome"], answer: "Paris" },
-                { question: "What is the largest planet in our solar system?", options: ["Earth", "Jupiter", "Mars", "Saturn"], answer: "Jupiter" },
-                { question: "What is the chemical symbol for water?", options: ["H2O", "CO2", "O2", "H2"], answer: "H2O" },
-                { question: "Who wrote 'Romeo and Juliet'?", options: ["Shakespeare", "Dickens", "Austen", "Hemingway"], answer: "Shakespeare" },
-                { question: "What is the speed of light?", options: ["300,000 km/s", "150,000 km/s", "400,000 km/s", "500,000 km/s"], answer: "300,000 km/s" },
-                // Add more questions here
-            ],
-            // Set 2: Empty set
-            [
-                { question: "" },
-                { question: "" },
-                { question: "" },
-                { question: "" },
-                // Add more questions here
-            ],
-            // Set 3: Another empty set
-            [
-                { question: "" },
-                { question: "" },
-                { question: "" },
-                { question: "" },
-                // Add more questions here
-            ],
-            // More sets can be added similarly
-        ];
 
+    <script>
+        let usedQuestions = JSON.parse(localStorage.getItem("usedQuestions")) || [];
         let currentSessionQuestions = [];
         let currentQuestionIndex = 0;
         let score = 0;
         let timeLeft = 60;
 
-        // Selects a random set that has valid questions
+        // Get player name
+        let playerName = prompt("Enter your name:");
+
+        // Store player name in localStorage
+        localStorage.setItem("playerName", playerName);
+
         function generateQuestionSet() {
-            const availableSets = questionSets.filter(set => set.some(question => question.question !== ""));
+            const availableSets = questionSets.filter((_, index) => !usedQuestions.includes(index));
             if (availableSets.length === 0) {
-                alert("No valid sets available!");
-                return [];
+                usedQuestions = [];
             }
-            
-            const randomIndex = Math.floor(Math.random() * availableSets.length);
-            return availableSets[randomIndex];
+            const randomIndex = Math.floor(Math.random() * questionSets.length);
+            usedQuestions.push(randomIndex);
+            localStorage.setItem("usedQuestions", JSON.stringify(usedQuestions));
+            return questionSets[randomIndex];
         }
 
-        // Initialize the first set of questions
         currentSessionQuestions = generateQuestionSet();
 
-        // Display the current question
         function displayQuestion() {
-            if (currentSessionQuestions.length === 0 || currentQuestionIndex >= currentSessionQuestions.length) {
+            if (currentQuestionIndex >= currentSessionQuestions.length) {
                 endGame();
                 return;
             }
@@ -154,7 +63,6 @@
             });
         }
 
-        // Check if the selected answer is correct
         function checkAnswer(selected, correct) {
             if (selected === correct) {
                 score++;
@@ -167,7 +75,6 @@
             displayQuestion();
         }
 
-        // Display feedback for the answer (correct or incorrect)
         function animateFeedback(status) {
             const feedback = document.createElement("div");
             feedback.textContent = status === "correct" ? "Correct!" : "Wrong!";
@@ -176,7 +83,6 @@
             setTimeout(() => feedback.remove(), 1000);
         }
 
-        // Start the countdown timer
         function startTimer() {
             const timer = setInterval(() => {
                 if (timeLeft <= 0) {
@@ -189,18 +95,24 @@
             }, 1000);
         }
 
-        // End the game and show the final score
         function endGame() {
             alert(`Game Over! Your score is ${score}`);
+            // Save the score to localStorage
+            saveScore(playerName, score);
+            localStorage.removeItem("usedQuestions");
+        }
+
+        // Save the player's score to localStorage
+        function saveScore(name, score) {
+            let leaderboard = JSON.parse(localStorage.getItem("leaderboard")) || [];
+            leaderboard.push({ name, score });
+            leaderboard.sort((a, b) => b.score - a.score); // Sort by score in descending order
+            localStorage.setItem("leaderboard", JSON.stringify(leaderboard));
         }
 
         document.addEventListener("DOMContentLoaded", () => {
-            if (currentSessionQuestions.length > 0) {
-                displayQuestion();
-                startTimer();
-            } else {
-                alert("No valid questions available to start the game.");
-            }
+            displayQuestion();
+            startTimer();
         });
     </script>
 </body>
