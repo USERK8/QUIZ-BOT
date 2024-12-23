@@ -1,4 +1,3 @@
-<!-- game.html -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -6,7 +5,75 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Quiz Game</title>
     <style>
-        /* Add your existing styles here */
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background-color: black;
+            color: white;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            overflow: hidden;
+        }
+        #header {
+            position: absolute;
+            top: 10px;
+            width: 100%;
+            display: flex;
+            justify-content: space-between;
+            padding: 0 20px;
+        }
+        #header span {
+            font-size: 18px;
+        }
+        #question-container {
+            text-align: center;
+            margin-top: 50px;
+        }
+        #question {
+            font-size: 24px;
+            margin-bottom: 20px;
+        }
+        #options button {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            padding: 10px 20px;
+            margin: 10px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        #options button:hover {
+            background-color: #0056b3;
+        }
+        .feedback {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 30px;
+            padding: 10px 20px;
+            border-radius: 5px;
+            animation: fadeout 1s forwards;
+        }
+        .correct {
+            background-color: green;
+        }
+        .incorrect {
+            background-color: red;
+        }
+        @keyframes fadeout {
+            0% {
+                opacity: 1;
+            }
+            100% {
+                opacity: 0;
+            }
+        }
     </style>
 </head>
 <body>
@@ -20,16 +87,24 @@
     </div>
 
     <script>
+        const questionSets = [
+            [
+                { question: "What is the capital of France?", options: ["Berlin", "Madrid", "Paris", "Rome"], answer: "Paris" },
+                { question: "What is 2 + 2?", options: ["3", "4", "5", "6"], answer: "4" }
+            ],
+            [
+                { question: "What is the largest planet?", options: ["Earth", "Jupiter", "Mars", "Saturn"], answer: "Jupiter" },
+                { question: "What is the square root of 16?", options: ["2", "3", "4", "5"], answer: "4" }
+            ]
+        ];
+
         let usedQuestions = JSON.parse(localStorage.getItem("usedQuestions")) || [];
         let currentSessionQuestions = [];
         let currentQuestionIndex = 0;
         let score = 0;
         let timeLeft = 60;
-
-        // Get player name
         let playerName = prompt("Enter your name:");
 
-        // Store player name in localStorage
         localStorage.setItem("playerName", playerName);
 
         function generateQuestionSet() {
@@ -37,10 +112,10 @@
             if (availableSets.length === 0) {
                 usedQuestions = [];
             }
-            const randomIndex = Math.floor(Math.random() * questionSets.length);
+            const randomIndex = Math.floor(Math.random() * availableSets.length);
             usedQuestions.push(randomIndex);
             localStorage.setItem("usedQuestions", JSON.stringify(usedQuestions));
-            return questionSets[randomIndex];
+            return availableSets[randomIndex];
         }
 
         currentSessionQuestions = generateQuestionSet();
@@ -97,16 +172,14 @@
 
         function endGame() {
             alert(`Game Over! Your score is ${score}`);
-            // Save the score to localStorage
             saveScore(playerName, score);
             localStorage.removeItem("usedQuestions");
         }
 
-        // Save the player's score to localStorage
         function saveScore(name, score) {
             let leaderboard = JSON.parse(localStorage.getItem("leaderboard")) || [];
             leaderboard.push({ name, score });
-            leaderboard.sort((a, b) => b.score - a.score); // Sort by score in descending order
+            leaderboard.sort((a, b) => b.score - a.score);
             localStorage.setItem("leaderboard", JSON.stringify(leaderboard));
         }
 
