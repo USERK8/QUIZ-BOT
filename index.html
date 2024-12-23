@@ -55,20 +55,17 @@
         <h1>Enter Your Name</h1>
         <input type="text" id="username" placeholder="Your Name">
         <br>
-        <button onclick="startQuiz()">Start</button>
+        <button onclick="goToRules()">Start</button>
     </div>
 
-    
     <script>
-        function startQuiz() {
-            const name = document.getElementById('username').value;
-            if (name.trim() === "") {
+        function goToRules() {
+            const name = document.getElementById('username').value.trim();
+            if (name === "") {
                 alert("Please enter your name before starting!");
             } else {
-                // Store the name in localStorage
-                localStorage.setItem('playerName', name);
-                // Redirect to the quiz page
-                window.location.href = "quiz.html";
+                // Redirect to quiz.html with player's name as a query parameter
+                window.location.href = `quiz.html?name=${encodeURIComponent(name)}`;
             }
         }
     </script>
