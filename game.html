@@ -96,31 +96,16 @@
         let playerName = localStorage.getItem("playerName") || prompt("Enter your name:");
         localStorage.setItem("playerName", playerName);
 
-        let usedQuestions = JSON.parse(localStorage.getItem("usedQuestions")) || [];
-        let currentSessionQuestions = [];
         let currentQuestionIndex = 0;
         let score = 0;
         let timeLeft = 60;
 
-        function generateQuestionSet() {
-            const availableSets = questionSets.filter((_, index) => !usedQuestions.includes(index));
-            if (availableSets.length === 0) {
-                usedQuestions = [];
-            }
-            const randomIndex = Math.floor(Math.random() * questionSets.length);
-            usedQuestions.push(randomIndex);
-            localStorage.setItem("usedQuestions", JSON.stringify(usedQuestions));
-            return questionSets[randomIndex];
-        }
-
-        currentSessionQuestions = generateQuestionSet();
-
         function displayQuestion() {
-            if (currentQuestionIndex >= currentSessionQuestions.length) {
+            if (currentQuestionIndex >= questionSets.length) {
                 endGame();
                 return;
             }
-            const question = currentSessionQuestions[currentQuestionIndex];
+            const question = questionSets[currentQuestionIndex];
             document.getElementById("question").textContent = question.question;
             const optionsContainer = document.getElementById("options");
             optionsContainer.innerHTML = "";
@@ -167,14 +152,7 @@
 
         function endGame() {
             alert(`Game Over! Your score is ${score}`);
-            saveScore(playerName, score);
             window.location.href = `congratulations.html?name=${playerName}&score=${score}`;
-            localStorage.removeItem("usedQuestions");
-        }
-
-        function saveScore(name, score) {
-            localStorage.setItem("score", score);
-            localStorage.setItem("playerName", name);
         }
 
         document.addEventListener("DOMContentLoaded", () => {
