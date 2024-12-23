@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Quiz Introduction</title>
+    <title>Enter Your Name</title>
     <style>
         body {
             margin: 0;
@@ -21,17 +21,21 @@
             padding: 20px;
             border-radius: 10px;
             box-shadow: 0 0 10px rgba(255, 255, 255, 0.2);
-            width: 80%;
         }
         .container h1 {
             margin-bottom: 20px;
             font-size: 24px;
         }
-        .container p {
-            font-size: 18px;
-            margin-bottom: 20px;
+        .container input[type="text"] {
+            width: 80%;
+            padding: 10px;
+            font-size: 16px;
+            border: none;
+            border-radius: 5px;
+            outline: none;
         }
         .container button {
+            margin-top: 20px;
             padding: 10px 20px;
             font-size: 16px;
             color: white;
@@ -48,38 +52,23 @@
 </head>
 <body>
     <div class="container">
-        <h1>Welcome to the Quiz!</h1>
-        <p id="playerName"></p>
-        <p>In this quiz, you will be asked a series of questions. Answer them to the best of your ability!</p>
-        <p><strong>Rules:</strong></p>
-        <ul>
-            <li>Each question has a time limit.</li>
-            <li>There is no penalty for wrong answers.</li>
-            <li>Have fun and do your best!</li>
-        </ul>
-        <button onclick="startGame()">Start Game</button>
+        <h1>Enter Your Name</h1>
+        <input type="text" id="username" placeholder="Your Name">
+        <br>
+        <button onclick="startGame()">Start</button>
     </div>
 
     <script>
-        // Get the player's name from the URL
-        const urlParams = new URLSearchParams(window.location.search);
-        const name = urlParams.get('name');
-
-        // Debugging: Check if the name is being extracted correctly
-        console.log('Player Name:', name);
-
-        // Display the player's name
-        if (name) {
-            document.getElementById('playerName').textContent = `Hello, ${name}! Get ready to start.`;
-        } else {
-            document.getElementById('playerName').textContent = 'Hello, Player! Get ready to start.';
-        }
-
-        // Function to start the game
         function startGame() {
-            alert("The game is starting!");
-            // You can add further game logic here or redirect to the quiz questions page
-            window.location.href = 'quiz_questions.html';  // Adjust this to your quiz page
+            const name = document.getElementById('username').value;
+            if (name.trim() === "") {
+                alert("Please enter your name before starting!");
+            } else {
+                // Store player name in sessionStorage
+                sessionStorage.setItem('playerName', name);
+                // Redirect to game page
+                window.location.href = "game.html";
+            }
         }
     </script>
 </body>
