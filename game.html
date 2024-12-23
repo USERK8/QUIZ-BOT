@@ -62,6 +62,7 @@
     </div>
 
     <script>
+        // Define the questions
         const questionSets = [
             { question: "What is the capital of France?", options: ["Berlin", "Madrid", "Paris", "Rome"], answer: "Paris" },
             { question: "What is 2 + 2?", options: ["3", "4", "5", "6"], answer: "4" },
@@ -73,12 +74,13 @@
         let score = 0;
         let timeLeft = 60;
 
-        // Start the game when the player enters their name
+        // Function to start the game
         function startGame() {
             displayQuestion();
             startTimer();
         }
 
+        // Display the current question
         function displayQuestion() {
             if (currentQuestionIndex >= questionSets.length) {
                 endGame();
@@ -97,6 +99,7 @@
             });
         }
 
+        // Check if the answer is correct
         function checkAnswer(selected, correct) {
             if (selected === correct) {
                 score++;
@@ -106,6 +109,7 @@
             displayQuestion();
         }
 
+        // Start the countdown timer
         function startTimer() {
             const timer = setInterval(() => {
                 if (timeLeft <= 0) {
@@ -118,11 +122,13 @@
             }, 1000);
         }
 
+        // End the game and show the result
         function endGame() {
             alert(`Game Over! Your score is ${score}`);
             window.location.href = `congratulations.html?name=${playerName}&score=${score}`;
         }
 
+        // Wait for the DOM to load before starting the game
         document.addEventListener("DOMContentLoaded", () => {
             startGame();
         });
