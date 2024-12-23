@@ -165,14 +165,23 @@
         }
 
         function endGame() {
-            alert(`Game Over! Your score is ${score}`);
-            localStorage.removeItem("usedQuestions");
-            // Redirect to a new page to show the score
-            window.location.href = `score.html?name=${encodeURIComponent(playerName)}&score=${score}`;
+            // Save the score to localStorage or send it to a leaderboard page
+            localStorage.setItem("playerScore", score);
+            localStorage.setItem("playerName", playerName);
+
+            // Redirect to the leaderboard page
+            window.location.href = "leaderboard.html";
         }
 
         document.addEventListener("DOMContentLoaded", () => {
-            playerName = prompt("Enter your name:");
+            // Only ask for the name once
+            if (!localStorage.getItem("playerName")) {
+                playerName = prompt("Enter your name:");
+                localStorage.setItem("playerName", playerName);
+            } else {
+                playerName = localStorage.getItem("playerName");
+            }
+
             displayQuestion();
             startTimer();
         });
