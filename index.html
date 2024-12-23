@@ -59,18 +59,14 @@
     </div>
 
     <script>
-        window.onload = function() {
-            document.getElementById('username').focus();
-        };
-
         function startQuiz() {
             const name = document.getElementById('username').value;
             if (name.trim() === "") {
                 alert("Please enter your name before starting!");
             } else {
                 alert(`Welcome, ${name}! Let's start the quiz.`);
-                // Redirect to quiz page (example: quiz.html)
-                window.location.href = "quiz.html";
+                // Redirect to intro page with the player's name in the URL
+                window.location.href = `intro.html?name=${encodeURIComponent(name)}`;
             }
         }
     </script>
