@@ -1,0 +1,109 @@
+const questionSets = [
+    // Set 1
+    [
+        { question: "What is 2 + 2?", options: ["3", "4", "5", "6"], answer: "4" },
+        { question: "What is the capital of France?", options: ["Berlin", "Madrid", "Paris", "Rome"], answer: "Paris" },
+    ],
+    // Set 2
+    [
+        { question: "What is the square root of 16?", options: ["2", "3", "4", "5"], answer: "4" },
+        { question: "Which planet is known as the Red Planet?", options: ["Earth", "Mars", "Jupiter", "Venus"], answer: "Mars" },
+    ],
+    // Add more sets as needed
+];
+
+let usedQuestions = JSON.parse(localStorage.getItem("usedQuestions")) || [];
+let currentSessionQuestions = [];
+
+// Function to select a set of questions
+function generateQuestionSet() {
+    const availableSets = questionSets.filter((_, index) => !usedQuestions.includes(index));
+    if (availableSets.length === 0) {
+        // Reset used questions if all sets are used
+        usedQuestions = [];
+    }
+
+    // Pick a random set
+    const randomIndex = Math.floor(Math.random() * questionSets.length);
+    usedQuestions.push(randomIndex);
+
+    // Save the updated usedQuestions to localStorage
+    localStorage.setItem("usedQuestions", JSON.stringify(usedQuestions));
+
+    return questionSets[randomIndex];
+}
+
+// Load questions for the current session
+currentSessionQuestions = generateQuestionSet();
+
+let currentQuestionIndex = 0;
+let score = 0;
+let timeLeft = 60; // 1 minute
+
+// Function to display a question
+function displayQuestion() {
+    if (currentQuestionIndex >= currentSessionQuestions.length) {
+        endGame();
+        return;
+    }
+
+    const question = currentSessionQuestions[currentQuestionIndex];
+    document.getElementById("question").textContent = question.question;
+    const optionsContainer = document.getElementById("options");
+    optionsContainer.innerHTML = "";
+
+    question.options.forEach((option) => {
+        const button = document.createElement("button");
+        button.textContent = option;
+        button.onclick = () => checkAnswer(option, question.answer);
+        optionsContainer.appendChild(button);
+    });
+}
+
+// Function to check the answer
+function checkAnswer(selected, correct) {
+    if (selected === correct) {
+        score++;
+        animateFeedback("correct");
+    } else {
+        animateFeedback("incorrect");
+    }
+
+    currentQuestionIndex++;
+    displayQuestion();
+}
+
+// Function to animate feedback
+function animateFeedback(status) {
+    const feedback = document.createElement("div");
+    feedback.textContent = status === "correct" ? "Correct!" : "Wrong!";
+    feedback.className = `feedback ${status}`;
+    document.body.appendChild(feedback);
+
+    setTimeout(() => feedback.remove(), 1000);
+}
+
+// Timer logic
+function startTimer() {
+    const timer = setInterval(() => {
+        if (timeLeft <= 0) {
+            clearInterval(timer);
+            endGame();
+        } else {
+            timeLeft--;
+            document.getElementById("timer").textContent = `Time: ${timeLeft}s`;
+        }
+    }, 1000);
+}
+
+// Function to end the game
+function endGame() {
+    alert(`Game Over! Your score is ${score}`);
+    localStorage.removeItem("usedQuestions"); // Uncomment to reset used questions after the game
+}
+
+// Initialize the game
+document.addEventListener("DOMContentLoaded", () => {
+    displayQuestion();
+    startTimer();
+});
