@@ -3,24 +3,22 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Endless Runner Game</title>
+    <title>Quiz Game</title>
     <style>
         body {
+            font-family: Arial, sans-serif;
             background-color: black;
             color: white;
-            font-family: Arial, sans-serif;
             text-align: center;
             padding: 20px;
         }
-        #game {
-            margin-top: 50px;
-        }
-        #game-over {
-            display: none;
+        .question {
             font-size: 24px;
-            color: red;
         }
-        button {
+        .options {
+            margin-top: 20px;
+        }
+        .options button {
             background-color: #007bff;
             color: white;
             border: none;
@@ -28,73 +26,103 @@
             font-size: 16px;
             cursor: pointer;
             border-radius: 5px;
+            margin: 5px;
+        }
+        .options button:hover {
+            background-color: #0056b3;
+        }
+        .timer {
+            font-size: 20px;
             margin-top: 20px;
         }
-        button:hover {
-            background-color: #0056b3;
+        .double-points {
+            color: yellow;
+            font-size: 20px;
+        }
+        .result {
+            font-size: 24px;
+            margin-top: 30px;
         }
     </style>
 </head>
 <body>
 
-    <h1>Endless Runner Game</h1>
-    <p id="player-name"></p>
-    <p id="score">Score: 0</p>
-
-    <div id="game">
-        <p>Press "Space" to jump over obstacles!</p>
-        <div id="game-over">Game Over! Your final score: <span id="final-score"></span></div>
+    <h1>Quiz Game</h1>
+    <div id="question-container">
+        <p class="question" id="question-text">What is the capital of France?</p>
+        <div class="options">
+            <button onclick="checkAnswer('A')">A. Paris</button>
+            <button onclick="checkAnswer('B')">B. London</button>
+            <button onclick="checkAnswer('C')">C. Berlin</button>
+            <button onclick="checkAnswer('D')">D. Madrid</button>
+        </div>
+        <p id="timer" class="timer">Time left: 10s</p>
+        <p id="double-points" class="double-points">Double Points in 5 seconds!</p>
     </div>
 
-    <button id="start-button">Start Game</button>
+    <div id="result" class="result"></div>
 
     <script>
-        let playerName = sessionStorage.getItem('playerName');
+        let correctAnswer = 'A';
         let score = 0;
-        let gameInterval;
-        let isJumping = false;
-        let isGameOver = false;
+        let timer = 10;
+        let doublePointsTime = 5;
+        let interval;
+        let isDoublePointsActive = false;
 
-        document.getElementById('player-name').textContent = "Player: " + playerName;
+        // Start the timer
+        function startTimer() {
+            interval = setInterval(function() {
+                document.getElementById('timer').textContent = `Time left: ${timer}s`;
 
-        document.getElementById('start-button').addEventListener('click', startGame);
-
-        function startGame() {
-            score = 0;
-            isGameOver = false;
-            isJumping = false;
-            document.getElementById('game-over').style.display = 'none';
-            document.getElementById('score').textContent = "Score: " + score;
-
-            gameInterval = setInterval(function() {
-                if (isGameOver) return;
-
-                score++;
-                document.getElementById('score').textContent = "Score: " + score;
-
-                if (Math.random() < 0.05 && !isJumping) {
-                    gameOver();
+                if (timer <= 0) {
+                    clearInterval(interval);
+                    endGame('Time is up!');
+                } else if (timer <= doublePointsTime && !isDoublePointsActive) {
+                    isDoublePointsActive = true;
+                    document.getElementById('double-points').style.display = 'block';
                 }
-            }, 100);
-
-            document.addEventListener('keydown', jump);
+                timer--;
+            }, 1000);
         }
 
-        function jump(event) {
-            if (event.code === 'Space' && !isJumping && !isGameOver) {
-                isJumping = true;
-                setTimeout(function() {
-                    isJumping = false;
-                }, 500);
+        // Check the answer
+        function checkAnswer(answer) {
+            clearInterval(interval);  // Stop the timer when an answer is selected
+            if (answer === correctAnswer) {
+                if (isDoublePointsActive) {
+                    score += 2;  // Double points if within the 5-second window
+                    document.getElementById('result').textContent = "Correct! You earned 2 points!";
+                } else {
+                    score += 1;  // Regular points
+                    document.getElementById('result').textContent = "Correct! You earned 1 point!";
+                }
+            } else {
+                document.getElementById('result').textContent = "Wrong answer! No points.";
             }
+            document.getElementById('question-container').style.display = 'none';  // Hide the question
+            setTimeout(resetGame, 2000);  // Wait for 2 seconds before resetting the game
         }
 
-        function gameOver() {
-            clearInterval(gameInterval);
-            isGameOver = true;
-            document.getElementById('game-over').style.display = 'block';
-            document.getElementById('final-score').textContent = score;
+        // End the game
+        function endGame(message) {
+            document.getElementById('result').textContent = `${message} Your final score is: ${score}`;
+            document.getElementById('question-container').style.display = 'none';
         }
+
+        // Reset the game
+        function resetGame() {
+            score = 0;
+            timer = 10;
+            isDoublePointsActive = false;
+            document.getElementById('double-points').style.display = 'none';
+            document.getElementById('result').textContent = '';
+            document.getElementById('question-container').style.display = 'block';
+            startTimer();
+        }
+
+        // Start the quiz when the page loads
+        startTimer();
     </script>
 
 </body>
