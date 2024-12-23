@@ -106,13 +106,21 @@
         let timeLeft = 60;
         let playerName;
 
-        // Prompt user for their name when the page loads
-        window.onload = function() {
+        // Check if the player name is already stored
+        if (!localStorage.getItem("playerName")) {
+            // Prompt the user for their name if not stored
             playerName = prompt("Enter your name:");
             if (!playerName) {
                 playerName = "Guest"; // Default name if user cancels or doesn't enter anything
             }
             localStorage.setItem("playerName", playerName);
+        } else {
+            // If name is already stored, use it
+            playerName = localStorage.getItem("playerName");
+        }
+
+        // Start the game
+        window.onload = function() {
             startGame();
         }
 
