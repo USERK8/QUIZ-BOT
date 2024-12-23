@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Game Over</title>
+    <style>
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background-color: black;
+            color: white;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+        }
+        h1 {
+            font-size: 36px;
+        }
+        .score {
+            font-size: 24px;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Congratulations, <span id="player-name"></span>!</h1>
+    <div class="score">
+        Your score: <span id="player-score"></span>
+    </div>
+
+    <script>
+        // Get player name and score from URL parameters or localStorage
+        const urlParams = new URLSearchParams(window.location.search);
+        const playerName = urlParams.get('name') || localStorage.getItem("playerName");
+        const score = urlParams.get('score') || localStorage.getItem("score");
+
+        // Display the player's name and score
+        document.getElementById("player-name").textContent = playerName;
+        document.getElementById("player-score").textContent = score;
+    </script>
+</body>
+</html>
