@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Quiz Game</title>         
+    <title>Quiz Game</title>
     <style>
         body {
             margin: 0;
@@ -94,32 +94,18 @@
             // Add more questions here
         ];
 
-        let usedQuestions = JSON.parse(localStorage.getItem("usedQuestions")) || [];
-        let currentSessionQuestions = [];
         let currentQuestionIndex = 0;
         let score = 0;
         let timeLeft = 60;
-        let playerName = "";
+        let playerName = localStorage.getItem("playerName") || "";
 
-        function generateQuestionSet() {
-            const availableSets = questionSets.filter((_, index) => !usedQuestions.includes(index));
-            if (availableSets.length === 0) {
-                usedQuestions = [];
-            }
-            const randomIndex = Math.floor(Math.random() * questionSets.length);
-            usedQuestions.push(randomIndex);
-            localStorage.setItem("usedQuestions", JSON.stringify(usedQuestions));
-            return questionSets[randomIndex];
+        if (!playerName) {
+            playerName = prompt("Enter your name:");
+            localStorage.setItem("playerName", playerName);
         }
 
-        currentSessionQuestions = generateQuestionSet();
-
         function displayQuestion() {
-            if (currentQuestionIndex >= currentSessionQuestions.length) {
-                endGame();
-                return;
-            }
-            const question = currentSessionQuestions[currentQuestionIndex];
+            const question = questionSets[currentQuestionIndex];
             document.getElementById("question").textContent = question.question;
             const optionsContainer = document.getElementById("options");
             optionsContainer.innerHTML = "";
@@ -141,7 +127,12 @@
             }
             document.getElementById("score").textContent = `Score: ${score}`;
             currentQuestionIndex++;
-            displayQuestion();
+
+            if (currentQuestionIndex < questionSets.length) {
+                displayQuestion();
+            } else {
+                endGame();
+            }
         }
 
         function animateFeedback(status) {
@@ -167,21 +158,11 @@
         function endGame() {
             // Save the score to localStorage or send it to a leaderboard page
             localStorage.setItem("playerScore", score);
-            localStorage.setItem("playerName", playerName);
-
             // Redirect to the leaderboard page
             window.location.href = "leaderboard.html";
         }
 
         document.addEventListener("DOMContentLoaded", () => {
-            // Only ask for the name once
-            if (!localStorage.getItem("playerName")) {
-                playerName = prompt("Enter your name:");
-                localStorage.setItem("playerName", playerName);
-            } else {
-                playerName = localStorage.getItem("playerName");
-            }
-
             displayQuestion();
             startTimer();
         });
