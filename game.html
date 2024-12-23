@@ -3,40 +3,129 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Congratulations</title>
+    <title>Quiz Game</title>
     <style>
         body {
+            margin: 0;
+            font-family: Arial, sans-serif;
             background-color: black;
             color: white;
-            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+        }
+        #question-container {
             text-align: center;
-            padding: 50px;
+            margin-top: 50px;
         }
-        .congrats-message {
+        #question {
             font-size: 24px;
-            margin: 20px 0;
+            margin-bottom: 20px;
         }
-        .score {
-            font-size: 32px;
-            font-weight: bold;
+        #options button {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            padding: 10px 20px;
+            margin: 10px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        #options button:hover {
+            background-color: #0056b3;
+        }
+        #header {
+            position: absolute;
+            top: 10px;
+            width: 100%;
+            display: flex;
+            justify-content: space-between;
+            padding: 0 20px;
+        }
+        #header span {
+            font-size: 18px;
         }
     </style>
 </head>
 <body>
-    <div class="congrats-message">
-        Congratulations, <span id="player-name"></span>!
+    <div id="header">
+        <span id="score">Score: 0</span>
+        <span id="timer">Time: 60s</span>
     </div>
-    <div class="score">
-        Your score is: <span id="player-score"></span>
+    <div id="question-container">
+        <div id="question">Loading question...</div>
+        <div id="options"></div>
     </div>
 
     <script>
-        const urlParams = new URLSearchParams(window.location.search);
-        const playerName = urlParams.get('name');
-        const score = urlParams.get('score');
+        const questionSets = [
+            { question: "What is the capital of France?", options: ["Berlin", "Madrid", "Paris", "Rome"], answer: "Paris" },
+            { question: "What is 2 + 2?", options: ["3", "4", "5", "6"], answer: "4" },
+            { question: "Which is the largest planet?", options: ["Earth", "Mars", "Jupiter", "Saturn"], answer: "Jupiter" }
+        ];
 
-        document.getElementById("player-name").textContent = playerName;
-        document.getElementById("player-score").textContent = score;
+        let playerName = prompt("Enter your name:");
+        let currentQuestionIndex = 0;
+        let score = 0;
+        let timeLeft = 60;
+
+        // Start the game when the player enters their name
+        function startGame() {
+            displayQuestion();
+            startTimer();
+        }
+
+        function displayQuestion() {
+            if (currentQuestionIndex >= questionSets.length) {
+                endGame();
+                return;
+            }
+            const question = questionSets[currentQuestionIndex];
+            document.getElementById("question").textContent = question.question;
+            const optionsContainer = document.getElementById("options");
+            optionsContainer.innerHTML = "";
+
+            question.options.forEach((option) => {
+                const button = document.createElement("button");
+                button.textContent = option;
+                button.onclick = () => checkAnswer(option, question.answer);
+                optionsContainer.appendChild(button);
+            });
+        }
+
+        function checkAnswer(selected, correct) {
+            if (selected === correct) {
+                score++;
+            }
+            document.getElementById("score").textContent = `Score: ${score}`;
+            currentQuestionIndex++;
+            displayQuestion();
+        }
+
+        function startTimer() {
+            const timer = setInterval(() => {
+                if (timeLeft <= 0) {
+                    clearInterval(timer);
+                    endGame();
+                } else {
+                    timeLeft--;
+                    document.getElementById("timer").textContent = `Time: ${timeLeft}s`;
+                }
+            }, 1000);
+        }
+
+        function endGame() {
+            alert(`Game Over! Your score is ${score}`);
+            window.location.href = `congratulations.html?name=${playerName}&score=${score}`;
+        }
+
+        document.addEventListener("DOMContentLoaded", () => {
+            startGame();
+        });
     </script>
 </body>
 </html>
