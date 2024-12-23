@@ -66,7 +66,7 @@
             } else {
                 alert(`Welcome, ${name}! Let's start the quiz.`);
                 // Redirect to intro page with the player's name in the URL
-                window.location.href = "intro.html?name=" + encodeURIComponent(name);
+                window.location.href = `intro.html?name=${encodeURIComponent(name)}`;
             }
         }
     </script>
