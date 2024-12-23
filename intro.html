@@ -3,80 +3,80 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Game Intro</title>
+    <title>Quiz Introduction</title>
     <style>
         body {
             margin: 0;
             height: 100vh;
             background-color: black;
-            color: white;
-            font-family: Arial, sans-serif;
             display: flex;
             justify-content: center;
             align-items: center;
-            flex-direction: column;
-            text-align: center;
+            font-family: Arial, sans-serif;
+            color: white;
         }
         .container {
-            background-color: #333;
+            text-align: center;
+            background-color: #1e1e1e;
             padding: 20px;
             border-radius: 10px;
             box-shadow: 0 0 10px rgba(255, 255, 255, 0.2);
             width: 80%;
-            max-width: 600px;
         }
-        h1 {
+        .container h1 {
             margin-bottom: 20px;
+            font-size: 24px;
         }
-        p {
+        .container p {
             font-size: 18px;
             margin-bottom: 20px;
         }
-        .player-name {
-            font-size: 20px;
-            font-weight: bold;
-            margin-bottom: 20px;
-        }
-        .start-button {
+        .container button {
             padding: 10px 20px;
-            font-size: 18px;
-            background-color: #007bff;
+            font-size: 16px;
             color: white;
+            background-color: #007bff;
             border: none;
             border-radius: 5px;
             cursor: pointer;
             transition: background-color 0.3s;
         }
-        .start-button:hover {
+        .container button:hover {
             background-color: #0056b3;
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>Welcome to the Quiz Game!</h1>
-        <p>Before we begin, here are the rules:</p>
-        <p>1. You will be presented with a series of questions.</p>
-        <p>2. Answer each question to the best of your ability.</p>
-        <p>3. Each correct answer will earn you points!</p>
-        <p>4. At the end of the game, your score will be displayed.</p>
-        <div class="player-name" id="playerName"></div>
-        <button class="start-button" onclick="startGame()">Start Game</button>
+        <h1>Welcome to the Quiz!</h1>
+        <p id="playerName"></p>
+        <p>In this quiz, you will be asked a series of questions. Answer them to the best of your ability!</p>
+        <p><strong>Rules:</strong></p>
+        <ul>
+            <li>Each question has a time limit.</li>
+            <li>There is no penalty for wrong answers.</li>
+            <li>Have fun and do your best!</li>
+        </ul>
+        <button onclick="startGame()">Start Game</button>
     </div>
 
     <script>
-        // Get the player's name from the URL query parameter
+        // Get the player's name from the URL
         const urlParams = new URLSearchParams(window.location.search);
-        const playerName = urlParams.get('name') || 'Player';
+        const name = urlParams.get('name');
 
-        // Display the player's name on the page
-        document.getElementById('playerName').innerText = `Player: ${playerName}`;
+        // Display the player's name
+        if (name) {
+            document.getElementById('playerName').textContent = `Hello, ${name}! Get ready to start.`;
+        } else {
+            document.getElementById('playerName').textContent = 'Hello, Player! Get ready to start.';
+        }
 
-        // Start the game when the button is clicked
+        // Function to start the game
         function startGame() {
-            alert('Let the game begin!');
-            // You can redirect to the actual quiz page here (e.g., quiz.html)
-            window.location.href = "quiz.html"; // Replace with your actual quiz page
+            alert("The game is starting!");
+            // You can add further game logic here or redirect to the quiz page
+            window.location.href = 'quiz.html';  // Adjust this to your quiz page
         }
     </script>
 </body>
