@@ -1,74 +1,271 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Quiz Rules</title>
-    <style>
-        body {
-            margin: 0;
-            height: 100vh;
-            background-color: black;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            font-family: Arial, sans-serif;
-            color: white;
-        }
-        .container {
-            text-align: center;
-            background-color: #1e1e1e;
-            padding: 20px;
-            border-radius: 10px;
-            box-shadow: 0 0 10px rgba(255, 255, 255, 0.2);
-        }
-        .container h1 {
-            margin-bottom: 20px;
-            font-size: 24px;
-        }
-        .container p {
-            font-size: 18px;
-            margin-bottom: 20px;
-        }
-        .container button {
-            padding: 10px 20px;
-            font-size: 16px;
-            color: white;
-            background-color: #007bff;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            transition: background-color 0.3s;
-        }
-        .container button:hover {
-            background-color: #0056b3;
-        }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Choose Difficulty — Quasar Quiz</title>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --void: #04060f;
+      --surface: rgba(12, 20, 40, 0.85);
+      --border: rgba(100, 180, 255, 0.12);
+      --cyan: #38d9f5;
+      --amber: #f5a623;
+      --red: #f55;
+      --green: #3df5a0;
+      --text: #ccd9f0;
+      --muted: #5a7099;
+      --glow-cyan: 0 0 20px rgba(56,217,245,0.3);
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: var(--void);
+      font-family: 'Syne', sans-serif;
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      position: relative;
+    }
+
+    body::before {
+      content: '';
+      position: fixed; inset: 0;
+      background-image:
+        radial-gradient(1px 1px at 15% 25%, rgba(255,255,255,0.5) 0%, transparent 100%),
+        radial-gradient(1px 1px at 40% 70%, rgba(255,255,255,0.4) 0%, transparent 100%),
+        radial-gradient(1px 1px at 65% 10%, rgba(255,255,255,0.6) 0%, transparent 100%),
+        radial-gradient(1px 1px at 80% 55%, rgba(255,255,255,0.3) 0%, transparent 100%),
+        radial-gradient(1px 1px at 25% 90%, rgba(255,255,255,0.5) 0%, transparent 100%),
+        radial-gradient(1.5px 1.5px at 90% 30%, rgba(56,217,245,0.5) 0%, transparent 100%),
+        radial-gradient(2px 2px at 50% 50%, rgba(245,166,35,0.3) 0%, transparent 100%);
+      pointer-events: none; z-index: 0;
+    }
+
+    .glow-tr {
+      position: fixed; width: 500px; height: 500px;
+      background: radial-gradient(ellipse, rgba(56,217,245,0.05) 0%, transparent 70%);
+      top: -100px; right: -100px;
+      pointer-events: none; z-index: 0;
+    }
+
+    .card {
+      position: relative; z-index: 1;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 24px;
+      padding: 48px 44px;
+      width: 500px;
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      box-shadow: 0 0 60px rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,255,255,0.06);
+      animation: rise 0.7s cubic-bezier(0.22, 1, 0.36, 1) both;
+    }
+
+    @keyframes rise {
+      from { opacity: 0; transform: translateY(24px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .back {
+      font-size: 12px;
+      color: var(--muted);
+      text-decoration: none;
+      font-family: 'JetBrains Mono', monospace;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      margin-bottom: 28px;
+      transition: color 0.2s;
+    }
+    .back:hover { color: var(--cyan); }
+
+    .greeting {
+      font-size: 13px;
+      color: var(--cyan);
+      font-family: 'JetBrains Mono', monospace;
+      letter-spacing: 0.1em;
+      margin-bottom: 8px;
+    }
+
+    h1 {
+      font-size: 30px;
+      font-weight: 800;
+      margin-bottom: 28px;
+      background: linear-gradient(135deg, #fff 30%, var(--cyan));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .rules {
+      background: rgba(56,217,245,0.04);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 18px 20px;
+      margin-bottom: 28px;
+    }
+
+    .rules p {
+      font-size: 13px;
+      color: var(--muted);
+      font-family: 'JetBrains Mono', monospace;
+      line-height: 1.9;
+    }
+
+    .rules p span { color: var(--cyan); }
+
+    .diff-label {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.18em;
+      color: var(--muted);
+      text-transform: uppercase;
+      margin-bottom: 14px;
+    }
+
+    .diff-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+      margin-bottom: 28px;
+    }
+
+    .diff-btn {
+      position: relative;
+      background: rgba(12, 20, 40, 0.7);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 18px 12px;
+      cursor: pointer;
+      text-align: center;
+      transition: all 0.2s;
+      outline: none;
+    }
+
+    .diff-btn:hover { border-color: rgba(100,180,255,0.3); transform: translateY(-2px); }
+
+    .diff-btn.selected {
+      border-color: var(--accent, var(--cyan));
+      background: rgba(56,217,245,0.07);
+      box-shadow: 0 0 20px rgba(56,217,245,0.15);
+    }
+
+    .diff-btn[data-diff="easy"] { --accent: var(--green); }
+    .diff-btn[data-diff="easy"].selected { border-color: var(--green); background: rgba(61,245,160,0.07); box-shadow: 0 0 20px rgba(61,245,160,0.15); }
+
+    .diff-btn[data-diff="medium"] { --accent: var(--amber); }
+    .diff-btn[data-diff="medium"].selected { border-color: var(--amber); background: rgba(245,166,35,0.07); box-shadow: 0 0 20px rgba(245,166,35,0.15); }
+
+    .diff-btn[data-diff="hard"] { --accent: var(--red); }
+    .diff-btn[data-diff="hard"].selected { border-color: var(--red); background: rgba(255,85,85,0.07); box-shadow: 0 0 20px rgba(255,85,85,0.15); }
+
+    .diff-icon { font-size: 24px; margin-bottom: 8px; }
+
+    .diff-name {
+      font-size: 13px;
+      font-weight: 700;
+      display: block;
+      margin-bottom: 4px;
+      color: white;
+    }
+
+    .diff-pts {
+      font-size: 10px;
+      font-family: 'JetBrains Mono', monospace;
+      color: var(--muted);
+    }
+
+    .diff-btn[data-diff="easy"] .diff-pts { color: var(--green); }
+    .diff-btn[data-diff="medium"] .diff-pts { color: var(--amber); }
+    .diff-btn[data-diff="hard"] .diff-pts { color: var(--red); }
+
+    .btn {
+      width: 100%;
+      padding: 15px;
+      background: linear-gradient(135deg, var(--cyan), #4a9eff);
+      border: none;
+      border-radius: 12px;
+      font-family: 'Syne', sans-serif;
+      font-size: 15px;
+      font-weight: 700;
+      color: #04060f;
+      cursor: pointer;
+      letter-spacing: 0.05em;
+      transition: opacity 0.2s, transform 0.15s, box-shadow 0.2s;
+      box-shadow: var(--glow-cyan);
+    }
+
+    .btn:hover { opacity: 0.9; transform: translateY(-1px); box-shadow: 0 0 30px rgba(56,217,245,0.5); }
+    .btn:active { transform: translateY(0); }
+    .btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
+  </style>
 </head>
 <body>
-    <div class="container">
-        <h1>Welcome, <span id="player-name"></span>!</h1>
-        <p>Rules:</p>
-        <ul>
-            <li>You have 1 minute to answer as many questions as possible.</li>
-            <li>Each correct answer awards you points.</li>
-            <li>Click on the correct option to proceed to the next question.</li>
-        </ul>
-        <button onclick="startGame()">Let's Begin</button>
+  <div class="glow-tr"></div>
+  <div class="card">
+    <a href="index.html" class="back">← back</a>
+    <p class="greeting">// welcome aboard</p>
+    <h1 id="heading">Ready, Player?</h1>
+
+    <div class="rules">
+      <p>
+        ⬡ You have <span>60 seconds</span> to answer as many questions as possible<br>
+        ⬡ Questions are <span>randomized</span> every game<br>
+        ⬡ Higher difficulty = <span>more points</span> per correct answer<br>
+        ⬡ Your score is saved to the <span>leaderboard</span>
+      </p>
     </div>
 
-    <script>
-        // Get player's name from the URL
-        const params = new URLSearchParams(window.location.search);
-        const playerName = params.get('name') || "Player";
+    <p class="diff-label">Select Difficulty</p>
+    <div class="diff-grid">
+      <button class="diff-btn" data-diff="easy" onclick="selectDiff(this)">
+        <div class="diff-icon">🌱</div>
+        <span class="diff-name">Easy</span>
+        <span class="diff-pts">+1 pt each</span>
+      </button>
+      <button class="diff-btn" data-diff="medium" onclick="selectDiff(this)">
+        <div class="diff-icon">⚡</div>
+        <span class="diff-name">Medium</span>
+        <span class="diff-pts">+2 pts each</span>
+      </button>
+      <button class="diff-btn" data-diff="hard" onclick="selectDiff(this)">
+        <div class="diff-icon">💀</div>
+        <span class="diff-name">Hard</span>
+        <span class="diff-pts">+3 pts each</span>
+      </button>
+    </div>
 
-        // Display the player's name
-        document.getElementById('player-name').textContent = playerName;
+    <button class="btn" id="startBtn" disabled onclick="startGame()">Select a difficulty first</button>
+  </div>
 
-        function startGame() {
-            // Redirect to game.html
-            window.location.href = `game.html?name=${encodeURIComponent(playerName)}`;
-        }
-    </script>
+  <script>
+    const params = new URLSearchParams(window.location.search);
+    const playerName = params.get('name') || 'Player';
+    document.getElementById('heading').textContent = `Ready, ${playerName}?`;
+
+    let selectedDiff = null;
+
+    function selectDiff(el) {
+      document.querySelectorAll('.diff-btn').forEach(b => b.classList.remove('selected'));
+      el.classList.add('selected');
+      selectedDiff = el.dataset.diff;
+      const btn = document.getElementById('startBtn');
+      btn.disabled = false;
+      btn.textContent = `Launch ${selectedDiff.charAt(0).toUpperCase() + selectedDiff.slice(1)} Mode →`;
+    }
+
+    function startGame() {
+      if (!selectedDiff) return;
+      localStorage.setItem('playerName', playerName);
+      localStorage.setItem('difficulty', selectedDiff);
+      window.location.href = `game.html?name=${encodeURIComponent(playerName)}&diff=${selectedDiff}`;
+    }
+  </script>
 </body>
 </html>
