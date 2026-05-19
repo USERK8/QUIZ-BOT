@@ -1,41 +1,347 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Leaderboard</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            background-color: black;
-            color: white;
-            text-align: center;
-            padding-top: 50px;
-        }
-        .leaderboard {
-            font-size: 24px;
-            margin-top: 20px;
-        }
-        .score {
-            font-size: 32px;
-            color: yellow;
-        }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Freaky Leaderboard</title>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --void: #04060f;
+      --surface: rgba(12, 20, 40, 0.85);
+      --border: rgba(100, 180, 255, 0.12);
+      --cyan: #38d9f5;
+      --amber: #f5a623;
+      --red: #f55;
+      --green: #3df5a0;
+      --text: #ccd9f0;
+      --muted: #5a7099;
+      --glow-cyan: 0 0 20px rgba(56,217,245,0.3);
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: var(--void);
+      font-family: 'Syne', sans-serif;
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      position: relative;
+    }
+
+    body::before {
+      content: '';
+      position: fixed; inset: 0;
+      background-image:
+        radial-gradient(1px 1px at 15% 25%, rgba(255,255,255,0.5) 0%, transparent 100%),
+        radial-gradient(1px 1px at 40% 70%, rgba(255,255,255,0.4) 0%, transparent 100%),
+        radial-gradient(1px 1px at 70% 45%, rgba(255,255,255,0.3) 0%, transparent 100%),
+        radial-gradient(1.5px 1.5px at 90% 30%, rgba(56,217,245,0.5) 0%, transparent 100%);
+      pointer-events: none; z-index: 0;
+    }
+
+    .card {
+      position: relative; z-index: 1;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 24px;
+      padding: 44px;
+      width: 500px;
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      box-shadow: 0 0 60px rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,255,255,0.06);
+      text-align: center;
+      animation: rise 0.6s cubic-bezier(0.22, 1, 0.36, 1) both;
+    }
+
+    @keyframes rise {
+      from { opacity: 0; transform: translateY(24px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    h1 {
+      font-size: 32px;
+      font-weight: 800;
+      margin-bottom: 8px;
+      background: linear-gradient(135deg, #fff 30%, var(--cyan));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .sarcastic-greeting {
+      font-size: 13px;
+      color: var(--cyan);
+      font-family: 'JetBrains Mono', monospace;
+      margin-bottom: 24px;
+      padding: 0 10px;
+      line-height: 1.5;
+    }
+
+    .score-display {
+      background: rgba(56,217,245,0.04);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 16px;
+      margin-bottom: 32px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 14px;
+      color: var(--muted);
+    }
+
+    .score-display span { color: white; }
+    .score-display .score {
+      font-size: 28px;
+      color: var(--amber);
+      font-family: 'Syne', sans-serif;
+      font-weight: 800;
+      display: block;
+      margin-top: 4px;
+      text-shadow: 0 0 15px rgba(245,166,35,0.4);
+    }
+
+    /* Navigation Menu Tabs */
+    .nav-tabs {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+      margin-bottom: 16px;
+      background: rgba(4, 6, 15, 0.5);
+      padding: 4px;
+      border-radius: 12px;
+      border: 1px solid var(--border);
+    }
+
+    .tab-btn {
+      background: transparent;
+      border: none;
+      padding: 10px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      color: var(--muted);
+      cursor: pointer;
+      border-radius: 8px;
+      transition: all 0.2s;
+    }
+
+    .tab-btn:hover { color: white; }
+
+    .tab-btn.active[data-tab="easy"] { background: rgba(61,245,160,0.15); color: var(--green); }
+    .tab-btn.active[data-tab="medium"] { background: rgba(245,166,35,0.15); color: var(--amber); }
+    .tab-btn.active[data-tab="hard"] { background: rgba(255,85,85,0.15); color: var(--red); }
+
+    .board-title {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.15em;
+      color: var(--muted);
+      text-transform: uppercase;
+      text-align: left;
+      margin-bottom: 10px;
+      padding-left: 4px;
+    }
+
+    /* Podium Board List */
+    .board-list {
+      background: rgba(12, 20, 40, 0.6);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 6px;
+      margin-bottom: 32px;
+      min-height: 160px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
+
+    .board-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 12px 16px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 14px;
+      border-bottom: 1px solid rgba(255,255,255,0.03);
+      animation: itemIn 0.3s ease space both;
+    }
+
+    @keyframes itemIn {
+      from { opacity: 0; transform: scale(0.98); }
+      to { opacity: 1; transform: scale(1); }
+    }
+
+    .board-item:last-child { border: none; }
+    
+    .player-meta {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .crown {
+      font-size: 18px;
+      display: inline-block;
+      width: 24px;
+      text-align: center;
+    }
+
+    .player-name { color: white; font-weight: 500; }
+    .item-score { font-weight: 700; color: var(--cyan); }
+
+    .btn {
+      width: 100%;
+      padding: 15px;
+      background: linear-gradient(135deg, var(--cyan), #4a9eff);
+      border: none;
+      border-radius: 12px;
+      font-family: 'Syne', sans-serif;
+      font-size: 15px;
+      font-weight: 700;
+      color: #04060f;
+      text-decoration: none;
+      display: block;
+      letter-spacing: 0.05em;
+      transition: opacity 0.2s, transform 0.15s, box-shadow 0.2s;
+      box-shadow: var(--glow-cyan);
+    }
+    .btn:hover { opacity: 0.9; transform: translateY(-1px); box-shadow: 0 0 30px rgba(56,217,245,0.5); }
+    .btn:active { transform: translateY(0); }
+  </style>
+
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
 </head>
 <body>
-    <div class="leaderboard">
-        <h1>Congratulations, <span id="playerName"></span>!</h1>
-        <p>Your Score: <span id="playerScore" class="score"></span></p>
+
+  <div class="card">
+    <h1>Leaderboard</h1>
+    <p id="greetingBox" class="sarcastic-greeting">// pulling system logs...</p>
+    
+    <div class="score-display">
+      <span>Active Session: <strong id="summaryName" style="color:var(--cyan)">Player</strong></span>
+      <span id="playerScore" class="score">0 pts</span>
     </div>
 
-    <script>
-        // Get player name and score from localStorage
-        const playerName = localStorage.getItem("playerName");
-        const playerScore = localStorage.getItem("playerScore");
+    <p class="board-title">🏆 Global Top 3 Rankings</p>
+    
+    <nav class="nav-tabs">
+      <button class="tab-btn active" data-tab="easy" onclick="switchTab('easy')">Easy</button>
+      <button class="tab-btn" data-tab="medium" onclick="switchTab('medium')">Medium</button>
+      <button class="tab-btn" data-tab="hard" onclick="switchTab('hard')">Hard</button>
+    </nav>
 
-        // Display player name and score
-        document.getElementById("playerName").textContent = playerName;
-        document.getElementById("playerScore").textContent = playerScore;
-    </script>
+    <div class="board-list" id="boardList">
+      <div class="board-item" style="color: var(--muted); justify-content: center;">Syncing with cloud matrix...</div>
+    </div>
+
+    <a href="index.html" class="btn">Launch New Run →</a>
+  </div>
+
+  <script>
+    // ─── FIREBASE CONFIGURATION ──────────────────────────────────────────
+    const firebaseConfig = {
+      apiKey: "AIzaSyDHWrmimEKnTEk2-jH4AKflay-2tfatB54",
+      authDomain: "quiz-bot-936ca.firebaseapp.com",
+      databaseURL: "https://quiz-bot-936ca-default-rtdb.firebaseio.com",
+      projectId: "quiz-bot-936ca",
+      storageBucket: "quiz-bot-936ca.firebasestorage.app",
+      messagingSenderId: "821265014853",
+      appId: "1:821265014853:web:ba28584c54d848cca4432c",
+      measurementId: "G-GGHS6286L8"
+    };
+
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+
+    // ─── LOCAL STORAGE INPUTS ────────────────────────────────────────────
+    const localName = localStorage.getItem("playerName") || "Player";
+    const localScore = localStorage.getItem("playerScore") || "0";
+    const localDiff = localStorage.getItem("difficulty") || "easy";
+
+    document.getElementById("summaryName").textContent = localName;
+    document.getElementById("playerScore").textContent = `${localScore} pts (${localDiff})`;
+
+    // ─── SARCASTIC GREETINGS ENGINE ──────────────────────────────────────
+    const greetings = [
+      `Wow, look at you, completely sweating over a quiz bot, ${localName}. 🧀`,
+      `Not bad, ${localName}. Did you actually know those or did you just click randomly? 🤔`,
+      `Main character energy right here. Absolute gigachad performance, ${localName}. ⚡`,
+      `Certified genius tier, or are you just chronically online, ${localName}? 🧠`,
+      `GG, ${localName}! Your remaining brain cells pulled through big time today. 💀`,
+      `Is that your actual score, ${localName}, or did you look up the code repository? 💻`
+    ];
+    document.getElementById("greetingBox").textContent = greetings[Math.floor(Math.random() * greetings.length)];
+
+    // ─── CORE DATABASE SYSTEM ────────────────────────────────────────────
+    let databaseCache = [];
+    let currentTab = localDiff; // Auto-focus on the difficulty the user just played
+
+    function switchTab(targetTab) {
+      currentTab = targetTab;
+      document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+      document.querySelector(`.tab-btn[data-tab="${targetTab}"]`).classList.add('active');
+      renderLeaderboard();
+    }
+
+    // Set initial tab selection visually
+    document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+    document.querySelector(`.tab-btn[data-tab="${currentTab}"]`).classList.add('active');
+
+    // Download complete ledger once, compute queries dynamically local-side
+    db.ref("scores").once("value")
+      .then((snapshot) => {
+        databaseCache = [];
+        snapshot.forEach((childSnapshot) => {
+          databaseCache.push(childSnapshot.val());
+        });
+        renderLeaderboard();
+      })
+      .catch((error) => {
+        console.error("Database connection fault: ", error);
+        document.getElementById("boardList").innerHTML = `<div class="board-item" style="color:var(--red); justify-content:center;">Cloud synchronization failure.</div>`;
+      });
+
+    function renderLeaderboard() {
+      const listContainer = document.getElementById("boardList");
+      listContainer.innerHTML = "";
+
+      // Filter based on selected navigation item, sort desc, limit to top 3 entries
+      const topThree = databaseCache
+        .filter(record => record.difficulty === currentTab)
+        .sort((a, b) => b.score - a.score)
+        .slice(0, 3);
+
+      if (topThree.length === 0) {
+        listContainer.innerHTML = `<div class="board-item" style="color: var(--muted); justify-content:center;">No data found inside this quadrant.</div>`;
+        return;
+      }
+
+      // Crown mappings: Rank 1 = Gold, Rank 2 = Silver, Rank 3 = Bronze/Brown
+      const crowns = ["👑", "🥈", "🥉"];
+
+      topThree.forEach((data, index) => {
+        const item = document.createElement("div");
+        item.className = "board-item";
+        item.innerHTML = `
+          <div class="player-meta">
+            <span class="crown">${crowns[index]}</span>
+            <span class="player-name">${esc(data.name)}</span>
+          </div>
+          <span class="item-score">${data.score} pts</span>
+        `;
+        listContainer.appendChild(item);
+      });
+    }
+
+    function esc(str) {
+      return (str || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+    }
+  </script>
 </body>
 </html>
