@@ -334,6 +334,9 @@
       100% { opacity: 0; transform: translateY(-60px); }
     }
   </style>
+
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
 </head>
 <body>
   <div class="feedback-overlay">
@@ -368,6 +371,21 @@
   </div>
 
   <script>
+    // ─── FIREBASE CONFIGURATION ──────────────────────────────────────────
+    const firebaseConfig = {
+      apiKey: "AIzaSyDHWrmimEKnTEk2-jH4AKflay-2tfatB54",
+      authDomain: "quiz-bot-936ca.firebaseapp.com",
+      databaseURL: "https://quiz-bot-936ca-default-rtdb.firebaseio.com",
+      projectId: "quiz-bot-936ca",
+      storageBucket: "quiz-bot-936ca.firebasestorage.app",
+      messagingSenderId: "821265014853",
+      appId: "1:821265014853:web:ba28584c54d848cca4432c",
+      measurementId: "G-GGHS6286L8"
+    };
+
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+
     // ─── QUESTION BANK ───────────────────────────────────────────────────
     const allQuestions = {
       easy: [
@@ -449,12 +467,10 @@
     document.getElementById('diffBadge').textContent = difficulty;
     document.getElementById('diffBadge').className = `diff-badge ${difficulty}`;
 
-    // Shuffle helper
     function shuffle(arr) {
       return [...arr].sort(() => Math.random() - 0.5);
     }
 
-    // Build question pool: pick 10 random from chosen difficulty
     const pool = shuffle(allQuestions[difficulty]).slice(0, 10);
     const TOTAL = pool.length;
     document.getElementById('qTotal').textContent = TOTAL;
@@ -473,15 +489,12 @@
       const q = pool[currentIdx];
       document.getElementById('qNum').textContent = currentIdx + 1;
 
-      // Progress bar
       document.getElementById('progressFill').style.width = `${(currentIdx / TOTAL) * 100}%`;
 
-      // Question text
       const qEl = document.getElementById('question');
       qEl.textContent = q.q;
       qEl.className = q.isCode ? 'code-q' : '';
 
-      // Shuffle options
       const shuffledOpts = shuffle(q.opts);
       const keys = ['A','B','C','D'];
       const container = document.getElementById('options');
@@ -495,7 +508,6 @@
         container.appendChild(btn);
       });
 
-      // Card re-animate
       const card = document.querySelector('.card');
       card.style.animation = 'none';
       requestAnimationFrame(() => { card.style.animation = 'cardIn 0.3s ease both'; });
@@ -521,7 +533,6 @@
         showPtsPop(`+${POINTS}`);
       } else {
         btn.classList.add('wrong');
-        // highlight correct
         allBtns.forEach(b => {
           if (b.textContent.includes(correct)) b.classList.add('correct');
         });
@@ -572,25 +583,28 @@
       }, 1000);
     }
 
-    // ─── END GAME ────────────────────────────────────────────────────────
+    // ─── END GAME (PUSH RESULTS TO REALTIME DATABASE) ────────────────────
     function endGame() {
       clearInterval(timerInterval);
 
-      // Save to leaderboard
-      const boards = JSON.parse(localStorage.getItem('leaderboard') || '[]');
-      boards.push({
+      // Secure payload structured to pass validation filter rules cleanly
+      db.ref("scores").push({
         name: playerName,
         score: score,
         difficulty: difficulty,
         date: new Date().toLocaleDateString()
+      })
+      .then(() => {
+        localStorage.setItem('playerName', playerName);
+        localStorage.setItem('playerScore', score);
+        window.location.href = `leaderboard.html?name=${encodeURIComponent(playerName)}&score=${score}&diff=${difficulty}`;
+      })
+      .catch((error) => {
+        console.error("Firebase runtime upload dropped: ", error);
+        localStorage.setItem('playerName', playerName);
+        localStorage.setItem('playerScore', score);
+        window.location.href = `leaderboard.html?name=${encodeURIComponent(playerName)}&score=${score}&diff=${difficulty}`;
       });
-      // Sort and keep top 10
-      boards.sort((a, b) => b.score - a.score);
-      localStorage.setItem('leaderboard', JSON.stringify(boards.slice(0, 20)));
-      localStorage.setItem('lastScore', score);
-      localStorage.setItem('playerName', playerName);
-
-      window.location.href = `leaderboard.html?name=${encodeURIComponent(playerName)}&score=${score}&diff=${difficulty}`;
     }
 
     // ─── INIT ─────────────────────────────────────────────────────────────
