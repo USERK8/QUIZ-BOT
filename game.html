@@ -1,199 +1,601 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Quiz Game</title>
-    <style>
-        body {
-            margin: 0;
-            font-family: Arial, sans-serif;
-            background-color: black;
-            color: white;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            height: 100vh;
-            overflow: hidden;
-        }
-        #header {
-            position: absolute;
-            top: 10px;
-            width: 100%;
-            display: flex;
-            justify-content: space-between;
-            padding: 0 20px;
-        }
-        #header span {
-            font-size: 18px;
-        }
-        #question-container {
-            text-align: center;
-            margin-top: 50px;
-        }
-        #question {
-            font-size: 24px;
-            margin-bottom: 20px;
-        }
-        #options button {
-            background-color: #007bff;
-            color: white;
-            border: none;
-            border-radius: 5px;
-            padding: 10px 20px;
-            margin: 10px;
-            font-size: 16px;
-            cursor: pointer;
-            transition: background-color 0.3s;
-        }
-        #options button:hover {
-            background-color: #0056b3;
-        }
-        .feedback {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            font-size: 30px;
-            padding: 10px 20px;
-            border-radius: 5px;
-            animation: fadeout 1s forwards;
-        }
-        .correct {
-            background-color: green;
-        }
-        .incorrect {
-            background-color: red;
-        }
-        @keyframes fadeout {
-            0% {
-                opacity: 1;
-            }
-            100% {
-                opacity: 0;
-            }
-        }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Quasar Quiz — Game</title>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --void: #04060f;
+      --surface: rgba(12, 20, 40, 0.88);
+      --border: rgba(100, 180, 255, 0.12);
+      --cyan: #38d9f5;
+      --amber: #f5a623;
+      --red: #f55;
+      --green: #3df5a0;
+      --text: #ccd9f0;
+      --muted: #5a7099;
+      --glow-cyan: 0 0 20px rgba(56,217,245,0.3);
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: var(--void);
+      font-family: 'Syne', sans-serif;
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      position: relative;
+    }
+
+    body::before {
+      content: '';
+      position: fixed; inset: 0;
+      background-image:
+        radial-gradient(1px 1px at 8%  15%, rgba(255,255,255,0.5) 0%, transparent 100%),
+        radial-gradient(1px 1px at 30% 55%, rgba(255,255,255,0.3) 0%, transparent 100%),
+        radial-gradient(1px 1px at 60% 10%, rgba(255,255,255,0.6) 0%, transparent 100%),
+        radial-gradient(1px 1px at 75% 70%, rgba(255,255,255,0.4) 0%, transparent 100%),
+        radial-gradient(1px 1px at 20% 90%, rgba(255,255,255,0.3) 0%, transparent 100%),
+        radial-gradient(1.5px 1.5px at 92% 40%, rgba(56,217,245,0.5) 0%, transparent 100%),
+        radial-gradient(1.5px 1.5px at 3%  65%, rgba(56,217,245,0.4) 0%, transparent 100%);
+      pointer-events: none; z-index: 0;
+    }
+
+    .wrap {
+      position: relative; z-index: 1;
+      width: 560px;
+      animation: rise 0.5s ease both;
+    }
+
+    @keyframes rise {
+      from { opacity: 0; transform: translateY(20px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    /* HUD top bar */
+    .hud {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 16px;
+      padding: 0 4px;
+    }
+
+    .hud-pill {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 99px;
+      padding: 8px 16px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 13px;
+      backdrop-filter: blur(12px);
+    }
+
+    .hud-pill .dot {
+      width: 7px; height: 7px;
+      border-radius: 50%;
+      background: var(--cyan);
+      box-shadow: 0 0 6px var(--cyan);
+      animation: pulse 1.5s ease infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.4; }
+    }
+
+    .score-val { color: var(--cyan); font-weight: 600; }
+    .timer-val { color: var(--amber); font-weight: 600; }
+    .timer-val.urgent { color: var(--red); animation: blink 0.5s ease infinite; }
+
+    @keyframes blink {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.5; }
+    }
+
+    .diff-badge {
+      font-size: 10px;
+      font-family: 'JetBrains Mono', monospace;
+      font-weight: 600;
+      letter-spacing: 0.1em;
+      padding: 4px 10px;
+      border-radius: 99px;
+      text-transform: uppercase;
+      background: var(--surface);
+      border: 1px solid var(--border);
+    }
+
+    .diff-badge.easy   { color: var(--green); border-color: rgba(61,245,160,0.3); }
+    .diff-badge.medium { color: var(--amber); border-color: rgba(245,166,35,0.3); }
+    .diff-badge.hard   { color: var(--red);   border-color: rgba(255,85,85,0.3);  }
+
+    /* Progress bar */
+    .progress-wrap {
+      background: rgba(255,255,255,0.05);
+      border-radius: 99px;
+      height: 4px;
+      margin-bottom: 20px;
+      overflow: hidden;
+    }
+
+    .progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--cyan), #6060ff);
+      border-radius: 99px;
+      transition: width 0.4s ease;
+      box-shadow: 0 0 10px rgba(56,217,245,0.5);
+    }
+
+    /* Timer bar */
+    .timer-bar-wrap {
+      background: rgba(255,255,255,0.05);
+      border-radius: 99px;
+      height: 3px;
+      margin-bottom: 24px;
+      overflow: hidden;
+    }
+
+    .timer-bar-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--green), var(--amber), var(--red));
+      background-size: 300% 100%;
+      border-radius: 99px;
+      transition: width 1s linear, background-position 1s linear;
+    }
+
+    /* Card */
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 22px;
+      padding: 40px 40px 32px;
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      box-shadow: 0 0 60px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.06);
+      animation: cardIn 0.4s ease both;
+    }
+
+    @keyframes cardIn {
+      from { opacity: 0; transform: scale(0.97); }
+      to   { opacity: 1; transform: scale(1); }
+    }
+
+    .q-meta {
+      font-size: 11px;
+      font-family: 'JetBrains Mono', monospace;
+      color: var(--muted);
+      letter-spacing: 0.12em;
+      margin-bottom: 14px;
+      text-transform: uppercase;
+    }
+
+    .q-meta span { color: var(--cyan); }
+
+    #question {
+      font-size: 21px;
+      font-weight: 700;
+      line-height: 1.45;
+      margin-bottom: 28px;
+      color: white;
+      min-height: 60px;
+    }
+
+    #question.code-q {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 15px;
+      background: rgba(56,217,245,0.04);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 16px;
+      color: var(--cyan);
+    }
+
+    .options {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+
+    .opt-btn {
+      position: relative;
+      background: rgba(255,255,255,0.03);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 14px 16px;
+      font-family: 'Syne', sans-serif;
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text);
+      cursor: pointer;
+      text-align: left;
+      transition: all 0.18s;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .opt-btn .opt-key {
+      width: 24px; height: 24px;
+      background: rgba(56,217,245,0.08);
+      border: 1px solid rgba(56,217,245,0.15);
+      border-radius: 6px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 11px;
+      font-family: 'JetBrains Mono', monospace;
+      color: var(--muted);
+      flex-shrink: 0;
+      transition: all 0.18s;
+    }
+
+    .opt-btn:hover:not(:disabled) {
+      border-color: rgba(56,217,245,0.4);
+      background: rgba(56,217,245,0.06);
+      transform: translateY(-1px);
+    }
+
+    .opt-btn:hover:not(:disabled) .opt-key {
+      background: rgba(56,217,245,0.15);
+      color: var(--cyan);
+    }
+
+    .opt-btn.correct {
+      border-color: var(--green);
+      background: rgba(61,245,160,0.1);
+      color: var(--green);
+    }
+
+    .opt-btn.correct .opt-key {
+      background: rgba(61,245,160,0.2);
+      border-color: var(--green);
+      color: var(--green);
+    }
+
+    .opt-btn.wrong {
+      border-color: var(--red);
+      background: rgba(255,85,85,0.08);
+      color: var(--red);
+    }
+
+    .opt-btn.wrong .opt-key {
+      background: rgba(255,85,85,0.15);
+      border-color: var(--red);
+      color: var(--red);
+    }
+
+    .opt-btn:disabled { cursor: default; transform: none; }
+
+    /* Code-style options */
+    .code-opt {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12px;
+    }
+
+    /* Feedback flash */
+    .feedback-overlay {
+      position: fixed; inset: 0;
+      pointer-events: none; z-index: 99;
+      display: flex; align-items: center; justify-content: center;
+    }
+
+    .feedback-msg {
+      font-size: 42px;
+      font-weight: 800;
+      opacity: 0;
+      transform: scale(0.8);
+      transition: none;
+      padding: 16px 32px;
+      border-radius: 16px;
+    }
+
+    .feedback-msg.show {
+      animation: feedAnim 0.8s ease forwards;
+    }
+
+    @keyframes feedAnim {
+      0%   { opacity: 0; transform: scale(0.7); }
+      20%  { opacity: 1; transform: scale(1.05); }
+      60%  { opacity: 1; transform: scale(1); }
+      100% { opacity: 0; transform: scale(0.9) translateY(-10px); }
+    }
+
+    .feedback-msg.correct-f {
+      color: var(--green);
+      text-shadow: 0 0 30px rgba(61,245,160,0.6);
+    }
+
+    .feedback-msg.wrong-f {
+      color: var(--red);
+      text-shadow: 0 0 30px rgba(255,85,85,0.6);
+    }
+
+    /* Points pop */
+    .pts-pop {
+      position: fixed;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--cyan);
+      pointer-events: none;
+      z-index: 100;
+      animation: ptsFly 0.9s ease forwards;
+    }
+
+    @keyframes ptsFly {
+      0%   { opacity: 1; transform: translateY(0); }
+      100% { opacity: 0; transform: translateY(-60px); }
+    }
+  </style>
 </head>
 <body>
-    <div id="header">
-        <span id="score">Score: 0</span>
-        <span id="timer">Time: 60s</span>
+  <div class="feedback-overlay">
+    <div class="feedback-msg" id="feedbackMsg"></div>
+  </div>
+
+  <div class="wrap">
+    <div class="hud">
+      <div class="hud-pill">
+        <div class="dot"></div>
+        <span>Score: <span class="score-val" id="scoreVal">0</span></span>
+      </div>
+      <span class="diff-badge" id="diffBadge">easy</span>
+      <div class="hud-pill">
+        <span>⏱ <span class="timer-val" id="timerVal">60s</span></span>
+      </div>
     </div>
-    <div id="question-container">
-        <div id="question">Loading question...</div>
-        <div id="options"></div>
+
+    <div class="progress-wrap">
+      <div class="progress-fill" id="progressFill" style="width:0%"></div>
     </div>
 
-    <script>
-        const questionSets = [
-            { question: "What is the capital of France?", options: ["Berlin", "Madrid", "Paris", "Rome"], answer: "Paris" },
-            { question: "Which is the largest planet?", options: ["Earth", "Mars", "Jupiter", "Venus"], answer: "Jupiter" },
-            { question: "Who wrote 'Romeo and Juliet'?", options: ["Shakespeare", "Dickens", "Hemingway", "Austen"], answer: "Shakespeare" },
-            { question: "Which planet is known as the Red Planet?", options: ["Earth", "Mars", "Jupiter", "Saturn"], answer: "Mars" },
-            { question: "What is the largest continent by area?", options: ["Africa", "Asia", "Europe", "North America"], answer: "Asia" },
-            { question: "Which gas do plants absorb from the atmosphere for photosynthesis?", options: ["Oxygen", "Carbon Dioxide", "Nitrogen", "Hydrogen"], answer: "Carbon Dioxide" },
-            { question: "What is the boiling point of water?", options: ["90°C", "100°C", "110°C", "120°C"], answer: "100°C" },
-            { question: "Who was the first President of the United States?", options: ["George Washington", "Abraham Lincoln", "Thomas Jefferson", "John Adams"], answer: "George Washington" },
-            { question: "What is the capital of Japan?", options: ["Seoul", "Beijing", "Tokyo", "Hanoi"], answer: "Tokyo" },
-            { question: "Which element has the chemical symbol 'O'?", options: ["Oxygen", "Osmium", "Ozone", "Oganesson"], answer: "Oxygen" },
-            { question: "What is the longest river in the world?", options: ["Amazon River", "Nile River", "Yangtze River", "Mississippi River"], answer: "Nile River" },
-            { question: "What is the smallest prime number?", options: ["0", "1", "2", "3"], answer: "2" },
-            { question: "Which country is known as the Land of the Rising Sun?", options: ["China", "India", "Japan", "South Korea"], answer: "Japan" },
-            { question: "Who painted the Mona Lisa?", options: ["Leonardo da Vinci", "Vincent van Gogh", "Pablo Picasso", "Claude Monet"], answer: "Leonardo da Vinci" },
-            { question: "What is the chemical symbol for gold?", options: ["Ag", "Au", "Pb", "Pt"], answer: "Au" },
-            { question: "What is the capital of Australia?", options: ["Sydney", "Melbourne", "Canberra", "Perth"], answer: "Canberra" },
-            { question: "Which is the largest mammal on Earth?", options: ["Elephant", "Blue Whale", "Giraffe", "Hippopotamus"], answer: "Blue Whale" },
-            { question: "What is the value of pi (π) up to two decimal places?", options: ["3.12", "3.14", "3.16", "3.18"], answer: "3.14" },
-            { question: "Which organ in the human body is responsible for pumping blood?", options: ["Lungs", "Liver", "Heart", "Kidneys"], answer: "Heart" },
-            { question: "What is the national flower of India?", options: ["Rose", "Lotus", "Marigold", "Sunflower"], answer: "Lotus" },
-            { question: "Which is the tallest mountain in the world?", options: ["K2", "Mount Everest", "Kangchenjunga", "Lhotse"], answer: "Mount Everest" },
-            { question: "What is the freezing point of water?", options: ["0°C", "32°C", "100°C", "-1°C"], answer: "0°C" },
-            { question: "Which planet is the largest in our solar system?", options: ["Earth", "Saturn", "Jupiter", "Neptune"], answer: "Jupiter" },
-            { question: "Who invented the light bulb?", options: ["Nikola Tesla", "Thomas Edison", "Alexander Graham Bell", "James Watt"], answer: "Thomas Edison" },
-            { question: "What is the official language of Brazil?", options: ["Spanish", "Portuguese", "English", "French"], answer: "Portuguese" },
-            { question: "Which is the longest bone in the human body?", options: ["Femur", "Humerus", "Tibia", "Fibula"], answer: "Femur" },
-            { question: "What is the main ingredient in guacamole?", options: ["Tomato", "Avocado", "Lettuce", "Cucumber"], answer: "Avocado" },
-            { question: "Which year did World War II end?", options: ["1940", "1945", "1950", "1939"], answer: "1945" },
-            { question: "Which ocean is the largest by surface area?", options: ["Atlantic Ocean", "Indian Ocean", "Arctic Ocean", "Pacific Ocean"], answer: "Pacific Ocean" },
-            { question: "Who is known as the Father of Computers?", options: ["Alan Turing", "Charles Babbage", "Bill Gates", "Steve Jobs"], answer: "Charles Babbage" },
-            { question: "What is the chemical formula for water?", options: ["H2O", "CO2", "O2", "NaCl"], answer: "H2O" },
-            // Add more questions here
-        ];
+    <div class="timer-bar-wrap">
+      <div class="timer-bar-fill" id="timerBar" style="width:100%"></div>
+    </div>
 
-        let currentQuestionIndex = 0;
-        let score = 0;
-        let timeLeft = 60;
-        let playerName = localStorage.getItem("playerName") || "";
+    <div class="card">
+      <p class="q-meta">Question <span id="qNum">1</span> / <span id="qTotal">10</span></p>
+      <div id="question">Loading...</div>
+      <div class="options" id="options"></div>
+    </div>
+  </div>
 
-        if (!playerName) {
-            playerName = prompt("Enter your name:");
-            localStorage.setItem("playerName", playerName);
-        }
+  <script>
+    // ─── QUESTION BANK ───────────────────────────────────────────────────
+    const allQuestions = {
+      easy: [
+        { q: "What is the capital of France?", opts: ["Berlin","Madrid","Paris","Rome"], ans: "Paris" },
+        { q: "Which planet is known as the Red Planet?", opts: ["Earth","Mars","Jupiter","Venus"], ans: "Mars" },
+        { q: "What is 12 × 12?", opts: ["124","144","132","148"], ans: "144" },
+        { q: "Who painted the Mona Lisa?", opts: ["Van Gogh","Picasso","Da Vinci","Michelangelo"], ans: "Da Vinci" },
+        { q: "What is the chemical symbol for water?", opts: ["H2O","CO2","O2","NaCl"], ans: "H2O" },
+        { q: "How many sides does a hexagon have?", opts: ["5","6","7","8"], ans: "6" },
+        { q: "What is the largest ocean on Earth?", opts: ["Atlantic","Indian","Arctic","Pacific"], ans: "Pacific" },
+        { q: "Which country gifted the Statue of Liberty to the USA?", opts: ["Germany","France","UK","Italy"], ans: "France" },
+        { q: "What color do you get mixing blue and yellow?", opts: ["Purple","Orange","Green","Brown"], ans: "Green" },
+        { q: "How many continents are there?", opts: ["5","6","7","8"], ans: "7" },
+        { q: "What is the capital of Japan?", opts: ["Seoul","Beijing","Tokyo","Hanoi"], ans: "Tokyo" },
+        { q: "Which gas do plants use for photosynthesis?", opts: ["Oxygen","Nitrogen","Carbon Dioxide","Hydrogen"], ans: "Carbon Dioxide" },
+        { q: "What is the smallest prime number?", opts: ["0","1","2","3"], ans: "2" },
+        { q: "Which is the longest river in the world?", opts: ["Amazon","Nile","Yangtze","Mississippi"], ans: "Nile" },
+        { q: "What is the boiling point of water (°C)?", opts: ["90","95","100","110"], ans: "100" },
+        { q: "Who wrote 'Romeo and Juliet'?", opts: ["Dickens","Shakespeare","Austen","Hemingway"], ans: "Shakespeare" },
+        { q: "What is the largest planet in our solar system?", opts: ["Saturn","Neptune","Earth","Jupiter"], ans: "Jupiter" },
+        { q: "What does 'www' stand for?", opts: ["World Wide Web","World Wide Wire","Wide Web World","Web World Wide"], ans: "World Wide Web" },
+        { q: "How many minutes are in an hour?", opts: ["30","45","60","90"], ans: "60" },
+        { q: "What is the national flower of India?", opts: ["Rose","Lotus","Marigold","Sunflower"], ans: "Lotus" },
+      ],
+      medium: [
+        { q: "What is the chemical symbol for gold?", opts: ["Ag","Au","Pb","Pt"], ans: "Au" },
+        { q: "Which year did World War II end?", opts: ["1940","1943","1945","1950"], ans: "1945" },
+        { q: "What is the value of π to 2 decimal places?", opts: ["3.12","3.14","3.16","3.18"], ans: "3.14" },
+        { q: "Who is known as the Father of Computers?", opts: ["Alan Turing","Charles Babbage","Bill Gates","Von Neumann"], ans: "Charles Babbage" },
+        { q: "What is the largest mammal on Earth?", opts: ["Elephant","Blue Whale","Giraffe","Hippo"], ans: "Blue Whale" },
+        { q: "What is the official language of Brazil?", opts: ["Spanish","English","Portuguese","French"], ans: "Portuguese" },
+        { q: "Which element has atomic number 79?", opts: ["Silver","Platinum","Gold","Copper"], ans: "Gold" },
+        { q: "What is the square root of 144?", opts: ["11","12","13","14"], ans: "12" },
+        { q: "Which ocean is the smallest?", opts: ["Indian","Arctic","Atlantic","Southern"], ans: "Arctic" },
+        { q: "What does DNA stand for?", opts: ["Deoxyribose Nucleic Acid","Dynamic Nucleic Acid","Deoxyribonucleic Acid","Digital Nucleic Acid"], ans: "Deoxyribonucleic Acid" },
+        { q: "What is the hardest natural substance?", opts: ["Gold","Iron","Diamond","Quartz"], ans: "Diamond" },
+        { q: "Which planet has the most moons?", opts: ["Jupiter","Saturn","Uranus","Neptune"], ans: "Saturn" },
+        { q: "What is the main ingredient in glass?", opts: ["Salt","Sand","Carbon","Limestone"], ans: "Sand" },
+        { q: "Who developed the theory of general relativity?", opts: ["Newton","Bohr","Einstein","Hawking"], ans: "Einstein" },
+        { q: "What programming language was created by Guido van Rossum?", opts: ["Java","Ruby","Python","Perl"], ans: "Python", isCode: false },
+        { q: "Which country has the largest population?", opts: ["USA","India","China","Russia"], ans: "India" },
+        { q: "How many bones are in the adult human body?", opts: ["196","206","216","226"], ans: "206" },
+        { q: "What is the freezing point of water in Fahrenheit?", opts: ["0°F","16°F","32°F","40°F"], ans: "32°F" },
+        { q: "Which company created the Java programming language?", opts: ["Microsoft","Sun Microsystems","IBM","Apple"], ans: "Sun Microsystems" },
+        { q: "What does HTTP stand for?", opts: ["HyperText Transfer Protocol","High Transfer Text Protocol","HyperText Transmission Protocol","Home Text Transfer Protocol"], ans: "HyperText Transfer Protocol" },
+      ],
+      hard: [
+        { q: "What is the output of: print(type([] == []))", opts: ["<class 'list'>","<class 'bool'>","<class 'NoneType'>","Error"], ans: "<class 'bool'>", isCode: true },
+        { q: "In Big-O notation, what is the time complexity of binary search?", opts: ["O(n)","O(n²)","O(log n)","O(1)"], ans: "O(log n)", isCode: true },
+        { q: "What will this return?\n'hello'[::-1]", opts: ["olleh","hello","Error","None"], ans: "olleh", isCode: true },
+        { q: "Which data structure uses LIFO order?", opts: ["Queue","Heap","Stack","Tree"], ans: "Stack" },
+        { q: "What is the value of 0.1 + 0.2 == 0.3 in Python?", opts: ["True","False","None","Error"], ans: "False", isCode: true },
+        { q: "What port does HTTPS run on by default?", opts: ["80","443","8080","22"], ans: "443", isCode: true },
+        { q: "What does SQL stand for?", opts: ["Structured Query Language","Simple Query Language","Standard Query Logic","Sequential Query Language"], ans: "Structured Query Language" },
+        { q: "Which sorting algorithm has the best average-case complexity?", opts: ["Bubble Sort","Merge Sort","Insertion Sort","Selection Sort"], ans: "Merge Sort" },
+        { q: "What is 2^10?", opts: ["512","1024","2048","256"], ans: "1024" },
+        { q: "In CSS, what does 'em' unit refer to?", opts: ["Screen width","Font size of element","Root font size","Viewport height"], ans: "Font size of element" },
+        { q: "What does 'git rebase' do?", opts: ["Deletes commits","Merges branches","Replays commits on a new base","Resets the repo"], ans: "Replays commits on a new base" },
+        { q: "Which HTTP method is idempotent AND safe?", opts: ["POST","PUT","DELETE","GET"], ans: "GET" },
+        { q: "What is the Fibonacci sequence after 8?\n0, 1, 1, 2, 3, 5, 8, ?", opts: ["11","12","13","14"], ans: "13", isCode: true },
+        { q: "In Python, what is the output of: bool([])?", opts: ["True","False","None","Error"], ans: "False", isCode: true },
+        { q: "What does the 'this' keyword refer to in JavaScript?", opts: ["The file","The current object","The window always","The parent function"], ans: "The current object" },
+        { q: "Which OSI layer does IP operate at?", opts: ["Layer 1","Layer 2","Layer 3","Layer 4"], ans: "Layer 3" },
+        { q: "What is a race condition?", opts: ["CPU overload","Two threads accessing shared data unpredictably","Memory leak","Infinite loop"], ans: "Two threads accessing shared data unpredictably" },
+        { q: "What does 'NaN === NaN' return in JavaScript?", opts: ["true","false","undefined","Error"], ans: "false", isCode: true },
+        { q: "Which algorithm is used in RSA encryption?", opts: ["Symmetric key","Elliptic curves","Prime factorisation","Hashing"], ans: "Prime factorisation" },
+        { q: "What is the output?\nconsole.log(typeof null)", opts: ["null","undefined","object","string"], ans: "object", isCode: true },
+      ]
+    };
 
-        function displayQuestion() {
-            const question = questionSets[currentQuestionIndex];
-            document.getElementById("question").textContent = question.question;
-            const optionsContainer = document.getElementById("options");
-            optionsContainer.innerHTML = "";
+    // ─── SETUP ───────────────────────────────────────────────────────────
+    const params = new URLSearchParams(window.location.search);
+    const playerName = params.get('name') || localStorage.getItem('playerName') || 'Player';
+    const difficulty = params.get('diff') || localStorage.getItem('difficulty') || 'easy';
+    const pointsMap = { easy: 1, medium: 2, hard: 3 };
+    const POINTS = pointsMap[difficulty] || 1;
+    const TIMER_TOTAL = 60;
 
-            question.options.forEach((option) => {
-                const button = document.createElement("button");
-                button.textContent = option;
-                button.onclick = () => checkAnswer(option, question.answer);
-                optionsContainer.appendChild(button);
-            });
-        }
+    document.getElementById('diffBadge').textContent = difficulty;
+    document.getElementById('diffBadge').className = `diff-badge ${difficulty}`;
 
-        function checkAnswer(selected, correct) {
-            if (selected === correct) {
-                score++;
-                animateFeedback("correct");
-            } else {
-                animateFeedback("incorrect");
-            }
-            document.getElementById("score").textContent = `Score: ${score}`;
-            currentQuestionIndex++;
+    // Shuffle helper
+    function shuffle(arr) {
+      return [...arr].sort(() => Math.random() - 0.5);
+    }
 
-            if (currentQuestionIndex < questionSets.length) {
-                displayQuestion();
-            } else {
-                endGame();
-            }
-        }
+    // Build question pool: pick 10 random from chosen difficulty
+    const pool = shuffle(allQuestions[difficulty]).slice(0, 10);
+    const TOTAL = pool.length;
+    document.getElementById('qTotal').textContent = TOTAL;
 
-        function animateFeedback(status) {
-            const feedback = document.createElement("div");
-            feedback.textContent = status === "correct" ? "Correct!" : "Wrong!";
-            feedback.className = `feedback ${status}`;
-            document.body.appendChild(feedback);
-            setTimeout(() => feedback.remove(), 1000);
-        }
+    let currentIdx = 0;
+    let score = 0;
+    let timeLeft = TIMER_TOTAL;
+    let timerInterval = null;
+    let answered = false;
 
-        function startTimer() {
-            const timer = setInterval(() => {
-                if (timeLeft <= 0) {
-                    clearInterval(timer);
-                    endGame();
-                } else {
-                    timeLeft--;
-                    document.getElementById("timer").textContent = `Time: ${timeLeft}s`;
-                }
-            }, 1000);
-        }
+    // ─── DISPLAY QUESTION ────────────────────────────────────────────────
+    function displayQuestion() {
+      if (currentIdx >= TOTAL) { endGame(); return; }
 
-        function endGame() {
-            // Save the score to localStorage or send it to a leaderboard page
-            localStorage.setItem("playerScore", score);
-            // Redirect to the leaderboard page
-            window.location.href = "leaderboard.html";
-        }
+      answered = false;
+      const q = pool[currentIdx];
+      document.getElementById('qNum').textContent = currentIdx + 1;
 
-        document.addEventListener("DOMContentLoaded", () => {
-            displayQuestion();
-            startTimer();
+      // Progress bar
+      document.getElementById('progressFill').style.width = `${(currentIdx / TOTAL) * 100}%`;
+
+      // Question text
+      const qEl = document.getElementById('question');
+      qEl.textContent = q.q;
+      qEl.className = q.isCode ? 'code-q' : '';
+
+      // Shuffle options
+      const shuffledOpts = shuffle(q.opts);
+      const keys = ['A','B','C','D'];
+      const container = document.getElementById('options');
+      container.innerHTML = '';
+
+      shuffledOpts.forEach((opt, i) => {
+        const btn = document.createElement('button');
+        btn.className = 'opt-btn' + (q.isCode ? ' code-opt' : '');
+        btn.innerHTML = `<span class="opt-key">${keys[i]}</span>${escHtml(opt)}`;
+        btn.onclick = () => checkAnswer(btn, opt, q.ans);
+        container.appendChild(btn);
+      });
+
+      // Card re-animate
+      const card = document.querySelector('.card');
+      card.style.animation = 'none';
+      requestAnimationFrame(() => { card.style.animation = 'cardIn 0.3s ease both'; });
+    }
+
+    function escHtml(str) {
+      return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+    }
+
+    // ─── CHECK ANSWER ────────────────────────────────────────────────────
+    function checkAnswer(btn, selected, correct) {
+      if (answered) return;
+      answered = true;
+
+      const allBtns = document.querySelectorAll('.opt-btn');
+      allBtns.forEach(b => b.disabled = true);
+
+      if (selected === correct) {
+        btn.classList.add('correct');
+        score += POINTS;
+        document.getElementById('scoreVal').textContent = score;
+        showFeedback('correct');
+        showPtsPop(`+${POINTS}`);
+      } else {
+        btn.classList.add('wrong');
+        // highlight correct
+        allBtns.forEach(b => {
+          if (b.textContent.includes(correct)) b.classList.add('correct');
         });
-    </script>
+        showFeedback('wrong');
+      }
+
+      setTimeout(() => {
+        currentIdx++;
+        displayQuestion();
+      }, 900);
+    }
+
+    // ─── FEEDBACK ────────────────────────────────────────────────────────
+    function showFeedback(type) {
+      const el = document.getElementById('feedbackMsg');
+      el.className = 'feedback-msg';
+      el.textContent = type === 'correct' ? '✓ Correct!' : '✗ Wrong!';
+      void el.offsetWidth;
+      el.className = `feedback-msg ${type === 'correct' ? 'correct-f' : 'wrong-f'} show`;
+    }
+
+    function showPtsPop(text) {
+      const el = document.createElement('div');
+      el.className = 'pts-pop';
+      el.textContent = text;
+      el.style.left = '50%';
+      el.style.top = '40%';
+      el.style.transform = 'translateX(-50%)';
+      document.body.appendChild(el);
+      setTimeout(() => el.remove(), 900);
+    }
+
+    // ─── TIMER ───────────────────────────────────────────────────────────
+    function startTimer() {
+      const timerVal = document.getElementById('timerVal');
+      const timerBar = document.getElementById('timerBar');
+
+      timerInterval = setInterval(() => {
+        timeLeft--;
+        timerVal.textContent = `${timeLeft}s`;
+        timerVal.className = timeLeft <= 10 ? 'timer-val urgent' : 'timer-val';
+        timerBar.style.width = `${(timeLeft / TIMER_TOTAL) * 100}%`;
+
+        if (timeLeft <= 0) {
+          clearInterval(timerInterval);
+          endGame();
+        }
+      }, 1000);
+    }
+
+    // ─── END GAME ────────────────────────────────────────────────────────
+    function endGame() {
+      clearInterval(timerInterval);
+
+      // Save to leaderboard
+      const boards = JSON.parse(localStorage.getItem('leaderboard') || '[]');
+      boards.push({
+        name: playerName,
+        score: score,
+        difficulty: difficulty,
+        date: new Date().toLocaleDateString()
+      });
+      // Sort and keep top 10
+      boards.sort((a, b) => b.score - a.score);
+      localStorage.setItem('leaderboard', JSON.stringify(boards.slice(0, 20)));
+      localStorage.setItem('lastScore', score);
+      localStorage.setItem('playerName', playerName);
+
+      window.location.href = `leaderboard.html?name=${encodeURIComponent(playerName)}&score=${score}&diff=${difficulty}`;
+    }
+
+    // ─── INIT ─────────────────────────────────────────────────────────────
+    displayQuestion();
+    startTimer();
+  </script>
 </body>
 </html>
